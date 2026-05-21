@@ -24,10 +24,13 @@ using Agents
 using Catalyst
 using ModelingToolkit
 using OrdinaryDiffEq
+using SBML
+using SBMLToolkit
 using RareDiseaseCore
 
 include("models/pah_pku.jl")
 include("models/sapropterin_pbpk.jl")
+include("biomodels.jl")
 include("cohort.jl")
 
 export
@@ -39,6 +42,8 @@ export
     pah_pku_problem,
     # Sapropterin PBPK
     SAPROPTERIN_PBPK, sapropterin_pbpk_problem,
+    # BioModels
+    load_biomodel,
     # Cohort
     Patient, build_cohort_model, run_cohort!
 
