@@ -36,6 +36,21 @@ using RDSimulation
         @test steady_phe(:null; bh4=2.0)          ≈ steady_phe(:null) atol=1e-9
     end
 
+    @testset "Sapropterin PBPK — peak after absorption then decay" begin
+        prob = sapropterin_pbpk_problem(; dose_mg=10.0, tspan=(0.0, 24.0))
+        sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+        # A_central starts at 0, must rise above 0 then decline by t=24h
+        central = [u[2] for u in sol.u]
+        peak, peak_idx = findmax(central)
+        @test peak > 0
+        @test peak_idx > 1
+        @test central[end] < peak
+        # Mass balance: gut + central never exceeds the initial dose
+        for u in sol.u
+            @test u[1] + u[2] ≤ 10.0 + 1e-6
+        end
+    end
+
     @testset "RunManifest stamping" begin
         rm = RunManifest(
             code_git_sha="abc",

@@ -27,6 +27,7 @@ using OrdinaryDiffEq
 using RareDiseaseCore
 
 include("models/pah_pku.jl")
+include("models/sapropterin_pbpk.jl")
 include("cohort.jl")
 
 export
@@ -36,6 +37,8 @@ export
     PAH_PKU, default_pah_parameters,
     pah_residual_activity, variant_effect,
     pah_pku_problem,
+    # Sapropterin PBPK
+    SAPROPTERIN_PBPK, sapropterin_pbpk_problem,
     # Cohort
     Patient, build_cohort_model, run_cohort!
 
