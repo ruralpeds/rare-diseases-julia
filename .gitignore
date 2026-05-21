@@ -1,0 +1,34 @@
+# Julia
+Manifest.toml
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+deps/deps.jl
+docs/build/
+docs/site/
+LocalPreferences.toml
+.julia/
+
+# Data — content-addressed downloads are never committed
+data/raw/
+data/interim/
+data/processed/
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
+
+# Python (for optional FFI tooling)
+__pycache__/
+*.pyc
+.venv/
+
+# Logs / scratch
+*.log
+scratch/
+tmp/

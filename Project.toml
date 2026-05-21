@@ -1,0 +1,12 @@
+name = "RareDiseasesJulia"
+uuid = "00000000-0000-4000-8000-000000000001"
+authors = ["rare-diseases-julia contributors"]
+version = "0.0.1"
+
+# Meta-environment for development across all packages in packages/.
+# Each subpackage carries its own Project.toml with real dependencies.
+
+[deps]
+
+[compat]
+julia = "1.10"

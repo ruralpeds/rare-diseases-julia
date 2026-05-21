@@ -1,0 +1,45 @@
+name	domain	url	license	citation	notes
+HPO	ontology	https://hpo.jax.org/data/ontology	CC-BY-4.0	Köhler S, et al. NAR 2021. PMID:33264411	Human Phenotype Ontology, obo + annotations
+MONDO	ontology	https://mondo.monarchinitiative.org/	CC-BY-4.0	Mungall CJ, et al. 2022	Unified disease ontology
+Orphanet-ORDO	ontology	https://www.orphadata.com/	CC-BY-4.0	Orphanet	Rare-disease ontology + epidemiology
+OMIM-mim2gene	ontology	https://omim.org/downloads	OMIM-OpenSubset	OMIM	Open subset only; full OMIM requires registration
+DiseaseOntology	ontology	https://disease-ontology.org/	CC0-1.0	Schriml LM, et al. NAR 2022	Cross-references
+MeSH	ontology	https://www.nlm.nih.gov/mesh/	Public-Domain	NLM	For literature linking
+GARD	clinical	https://rarediseases.info.nih.gov/	Public-Domain	NIH GARD	Disease summaries
+ClinicalTrials-AACT	clinical	https://aact.ctti-clinicaltrials.org/	CC-BY-4.0	CTTI AACT	Relational dump of ClinicalTrials.gov
+FDA-OOPD	clinical	https://www.accessdata.fda.gov/scripts/opdlisting/oopd/	Public-Domain	FDA	Orphan drug designations
+FDA-FAERS	clinical	https://fis.fda.gov/extensions/FPD-QDE-FAERS/	Public-Domain	FDA	Adverse event reports, quarterly
+FDA-OrangeBook	clinical	https://www.fda.gov/drugs/drug-approvals-and-databases/approved-drug-products-therapeutic-equivalence-evaluations-orange-book	Public-Domain	FDA	Approval + exclusivity
+DailyMed	clinical	https://dailymed.nlm.nih.gov/dailymed/	Public-Domain	NLM	Structured product labels (SPL XML)
+RxNorm	clinical	https://www.nlm.nih.gov/research/umls/rxnorm/	UMLS-License	NLM	Drug normalization
+ClinVar	genomics	https://ftp.ncbi.nlm.nih.gov/pub/clinvar/	Public-Domain	Landrum MJ, et al. NAR 2020	Variant-disease assertions
+gnomAD	genomics	https://gnomad.broadinstitute.org/downloads	CC0-1.0	Karczewski KJ, et al. Nature 2020	Population allele frequencies v4
+dbSNP	genomics	https://www.ncbi.nlm.nih.gov/snp/	Public-Domain	NCBI	Variant identifiers
+dbVar	genomics	https://www.ncbi.nlm.nih.gov/dbvar/	Public-Domain	NCBI	Structural variants
+GTEx	genomics	https://gtexportal.org/home/datasets	CC-BY-NC-SA-4.0	GTEx Consortium 2020	Tissue expression summary stats
+GENCODE	genomics	https://www.gencodegenes.org/	CC-BY-4.0	Frankish A, et al. NAR 2021	Gene models GTF/GFF3
+Ensembl	genomics	https://www.ensembl.org/info/data/	Apache-2.0	Cunningham F, et al. NAR 2022	Gene models + annotations
+RefSeq	genomics	https://www.ncbi.nlm.nih.gov/refseq/	Public-Domain	O'Leary NA, et al. NAR 2016	Reference sequences
+HGNC	genomics	https://www.genenames.org/download/	CC0-1.0	Seal RL, et al. NAR 2022	Gene symbols + aliases
+PanelApp	genomics	https://panelapp.genomicsengland.co.uk/	CC-BY-4.0	Martin AR, et al. Nat Genet 2019	Gene panels per condition
+MANE	genomics	https://www.ncbi.nlm.nih.gov/refseq/MANE/	Public-Domain	Morales J, et al. Nature 2022	Canonical transcripts
+UniProt	proteomics	https://www.uniprot.org/	CC-BY-4.0	UniProt Consortium NAR 2023	Canonical proteins
+AlphaFoldDB	proteomics	https://alphafold.ebi.ac.uk/	CC-BY-4.0	Varadi M, et al. NAR 2022	Predicted structures
+PDB	proteomics	https://www.rcsb.org/	CC0-1.0	Berman HM, et al. NAR 2000	Experimental structures
+InterPro	proteomics	https://www.ebi.ac.uk/interpro/	CC0-1.0	Paysan-Lafosse T, et al. NAR 2023	Domains + signatures
+Pfam	proteomics	https://www.ebi.ac.uk/interpro/entry/pfam/	CC0-1.0	Mistry J, et al. NAR 2021	Protein families
+STRING	proteomics	https://string-db.org/	CC-BY-4.0	Szklarczyk D, et al. NAR 2023	PPI network
+Reactome	pathways	https://reactome.org/download-data	CC-BY-4.0	Gillespie M, et al. NAR 2022	Curated pathways, SBML/BioPAX
+WikiPathways	pathways	https://www.wikipathways.org/	CC0-1.0	Martens M, et al. NAR 2021	Community pathways GPML
+SIGNOR	pathways	https://signor.uniroma2.it/	CC-BY-SA-4.0	Lo Surdo P, et al. NAR 2023	Signed signaling network
+BioModels	pathways	https://www.ebi.ac.uk/biomodels/	CC0-1.0	Malik-Sheriff RS, et al. NAR 2020	Curated SBML models
+ChEMBL	pharmacology	https://www.ebi.ac.uk/chembl/	CC-BY-SA-3.0	Mendez D, et al. NAR 2019	Bioactivity database
+DrugBank-open	pharmacology	https://go.drugbank.com/releases/latest	CC-BY-NC-4.0	Wishart DS, et al. NAR 2018	Open subset only
+PubChem	pharmacology	https://pubchem.ncbi.nlm.nih.gov/	Public-Domain	Kim S, et al. NAR 2023	Compounds + bioassays
+BindingDB	pharmacology	https://www.bindingdb.org/	CC-BY-3.0	Gilson MK, et al. NAR 2016	Binding affinities
+PharmGKB	pharmacology	https://www.pharmgkb.org/downloads	CC-BY-SA-4.0	Whirl-Carrillo M, et al. CPT 2021	Pharmacogenomics, open subset
+PubMed	literature	https://pubmed.ncbi.nlm.nih.gov/	Public-Domain	NLM	Abstracts via Baseline
+PMC-OAS	literature	https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/	Various-OA	NLM	Open access full text
+EuropePMC	literature	https://europepmc.org/	Various-OA	Europe PMC Consortium	Alternative API
+bioRxiv	literature	https://www.biorxiv.org/	CC-BY-Various	CSHL	Preprints
+medRxiv	literature	https://www.medrxiv.org/	CC-BY-Various	CSHL/BMJ/Yale	Clinical preprints
