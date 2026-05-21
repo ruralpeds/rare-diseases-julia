@@ -39,6 +39,7 @@ makedocs(;
         "Home"            => "index.md",
         "Plan"            => "plan.md",
         "Ethics"          => "ethics.md",
+        "Worked diseases" => "worked_diseases.md",
         "Packages" => [
             "RareDiseaseCore" => "packages/raredisease_core.md",
             "RDDataSources"   => "packages/rd_data_sources.md",
