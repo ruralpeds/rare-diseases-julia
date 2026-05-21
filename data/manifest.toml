@@ -1,0 +1,11 @@
+# Pinned dataset versions. Each entry corresponds to one row in SOURCES.tsv.
+# Populated by `scripts/refresh_data.jl`; do not edit by hand.
+
+schema_version = 1
+
+# [HPO]
+# version = "2024-12-12"
+# url = "https://github.com/obophenotype/human-phenotype-ontology/releases/download/v2024-12-12/hp.obo"
+# sha256 = ""
+# retrieved_at = ""
+# bytes = 0

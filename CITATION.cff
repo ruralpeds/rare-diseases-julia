@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+title: "rare-diseases-julia: an open Julia platform for rare-disease informatics and simulation"
+message: "If you use this software, please cite it using this metadata."
+type: software
+authors:
+  - given-names: "rare-diseases-julia contributors"
+repository-code: "https://github.com/ruralpeds/rare-diseases-julia"
+license: MIT
+version: "0.0.1-dev"

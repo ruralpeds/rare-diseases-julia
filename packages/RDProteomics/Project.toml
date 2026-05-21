@@ -1,0 +1,16 @@
+name = "RDProteomics"
+uuid = "11111111-0000-4000-8000-000000000005"
+authors = ["rare-diseases-julia contributors"]
+version = "0.0.1"
+
+[deps]
+RareDiseaseCore = "11111111-0000-4000-8000-000000000001"
+
+[compat]
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

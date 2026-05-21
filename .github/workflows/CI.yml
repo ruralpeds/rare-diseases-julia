@@ -1,0 +1,92 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  test:
+    name: ${{ matrix.package }} / Julia ${{ matrix.julia-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        julia-version: ["1.10", "1"]
+        os: [ubuntu-latest]
+        package:
+          - RareDiseaseCore
+          - RDDataSources
+          - RDOntology
+          - RDGenomics
+          - RDProteomics
+          - RDPathways
+          - RDPharmacology
+          - RDClinical
+          - RDDiagnostics
+          - RDSimulation
+          - RDTreatment
+          - RDApp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.julia-version }}
+      - uses: julia-actions/cache@v2
+      - name: Test ${{ matrix.package }}
+        run: |
+          julia --project=packages/${{ matrix.package }} -e '
+            using Pkg
+            Pkg.develop([
+              PackageSpec(path="packages/RareDiseaseCore"),
+            ])
+            Pkg.instantiate()
+            Pkg.test()
+          '
+
+  sources-gate:
+    name: SOURCES.tsv gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify every referenced source is registered
+        run: |
+          set -euo pipefail
+          # Extract registered names (skip header)
+          tail -n +2 data/SOURCES.tsv | cut -f1 | sort -u > /tmp/registered.txt
+          # Scan source code for source identifiers used by downloaders.
+          # Convention: downloaders annotate themselves with `# source: <name>`
+          grep -rhoE '^[[:space:]]*#[[:space:]]*source:[[:space:]]*[A-Za-z0-9_-]+' packages/ \
+            | sed -E 's/.*source:[[:space:]]*//' | sort -u > /tmp/used.txt || true
+          if [ -s /tmp/used.txt ]; then
+            missing=$(comm -23 /tmp/used.txt /tmp/registered.txt)
+            if [ -n "$missing" ]; then
+              echo "::error::These sources are used in code but missing from data/SOURCES.tsv:"
+              echo "$missing"
+              exit 1
+            fi
+          fi
+          echo "OK: all referenced sources are registered."
+
+  format:
+    name: JuliaFormatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+      - uses: julia-actions/cache@v2
+      - name: Check formatting
+        run: |
+          julia -e '
+            using Pkg
+            Pkg.add("JuliaFormatter")
+            using JuliaFormatter
+            ok = format(".", verbose=true)
+            ok || exit(1)
+          '
