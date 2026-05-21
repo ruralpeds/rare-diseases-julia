@@ -15,7 +15,13 @@ Phase 4 of the build plan.
 """
 module RDGenomics
 
+using FASTX
 using RareDiseaseCore
+
+# VCF reading will be wired to a BioJulia-ecosystem package
+# (VariantCallFormat or GeneticVariation) when we add the
+# ClinVar/gnomAD ingestion pass; FASTX is in already so we can
+# load reference sequences alongside HGVS calls.
 
 include("hgvs.jl")
 

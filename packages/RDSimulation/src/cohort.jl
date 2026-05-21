@@ -1,49 +1,49 @@
-# Lightweight Markov-style cohort scaffold.
-#
-# Agents.jl will be the production engine for Phase 9.3; this module
-# provides a hand-rolled Markov-chain cohort runner so that worked
-# examples (PKU diet vs sapropterin) can land without pulling in the
-# Agents.jl dependency tree.
+# Patient cohort built on Agents.jl.
 
 """
-    CohortAgent
+    Patient
 
-One simulated patient. `state` is a free-form symbol (e.g. `:on_diet`,
-`:on_sapropterin`, `:metabolic_crisis`). `covariates` is a small dict for
-genotype/age/etc.
+Agent type for cohort simulations. `state` is a free-form `Symbol`
+(e.g. `:on_diet`, `:on_sapropterin`, `:metabolic_crisis`). `covariates`
+holds genotype/age/etc.
 """
-mutable struct CohortAgent
-    id::Int
+@agent struct Patient(NoSpaceAgent)
     state::Symbol
     covariates::Dict{Symbol,Any}
-    history::Vector{Tuple{Float64,Symbol}}
 end
-CohortAgent(id, state) = CohortAgent(id, state, Dict{Symbol,Any}(), [(0.0, state)])
 
 """
-    cohort_simulate(agents, transition!; tspan, dt=1.0, rng) -> agents
+    build_cohort_model(; n_agents, initial_state=:on_diet,
+                        agent_step!,
+                        rng::AbstractRNG=Random.default_rng()) -> AgentBasedModel
 
-Run a discrete-time Markov-style cohort simulation. `transition!` is
-called once per agent per tick with signature
-`transition!(agent, t, dt, rng) -> nothing` and is responsible for
-sampling the next state.
+Construct an `Agents.StandardABM` with `n_agents` patients in the
+specified `initial_state` and the given per-tick `agent_step!`
+transition function.
+
+The `agent_step!` callback receives `(agent, model)` and is expected to
+mutate `agent.state` in place. Use `abmrng(model)` for the seeded RNG.
 """
-function cohort_simulate(
-    agents::Vector{CohortAgent},
-    transition!::Function;
-    tspan::Tuple{<:Real,<:Real},
-    dt::Real=1.0,
+function build_cohort_model(;
+    n_agents::Int,
+    initial_state::Symbol=:on_diet,
+    agent_step!::Function,
     rng::AbstractRNG=Random.default_rng(),
 )
-    t = Float64(tspan[1])
-    tend = Float64(tspan[2])
-    while t < tend
-        step = min(Float64(dt), tend - t)
-        for a in agents
-            transition!(a, t, step, rng)
-            push!(a.history, (t + step, a.state))
-        end
-        t += step
+    model = StandardABM(Patient; agent_step!=agent_step!, rng=rng)
+    for _ in 1:n_agents
+        add_agent!(model, initial_state, Dict{Symbol,Any}())
     end
-    return agents
+    return model
+end
+
+"""
+    run_cohort!(model, n_steps) -> model
+
+Advance the cohort `n_steps` ticks. Returns the same model so calls
+chain. Use `Agents.allagents(model)` to inspect post-run states.
+"""
+function run_cohort!(model, n_steps::Integer)
+    run!(model, n_steps)
+    return model
 end

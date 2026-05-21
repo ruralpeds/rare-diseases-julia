@@ -3,11 +3,12 @@
 
 Reactome, WikiPathways, SIGNOR, BioModels. Places genes/proteins in
 mechanistic networks; supports shortest-path, neighborhood, centrality,
-network-proximity queries, and signed-edge logic.
+network-proximity (Guney 2016) queries, and signed-edge logic.
 
-Phase 6 of the build plan. We ship a hand-rolled adjacency-list graph
-keyed by `String` node IDs (HGNC, UniProt, or whatever the caller picks),
-plus BFS-based path queries. Full SBML/BioPAX/GPML parsing lands later.
+Phase 6 of the build plan. Built on `Graphs.jl` + `MetaGraphsNext.jl` so
+that all general-purpose graph algorithms (Dijkstra, centrality, BFS,
+connected components, …) come from the Julia ecosystem; this package
+contributes only the disease-specific scoring on top.
 
 # source: Reactome
 # source: WikiPathways
@@ -18,10 +19,12 @@ plus BFS-based path queries. Full SBML/BioPAX/GPML parsing lands later.
 module RDPathways
 
 import Random
+using Graphs
+using MetaGraphsNext
 using RareDiseaseCore
 
 export
-    PathwayNetwork,
+    PathwayNetwork, NodeData, EdgeData,
     add_node!, add_edge_undirected!, add_edge_directed!,
     has_node, has_edge,
     neighbors_of, neighborhood, shortest_path_length, shortest_path,
@@ -30,42 +33,63 @@ export
     pathways_for_gene
 
 """
+    NodeData
+
+Per-vertex metadata stored in the MetaGraph.
+"""
+mutable struct NodeData
+    pathways::Set{String}
+end
+NodeData() = NodeData(Set{String}())
+
+"""
+    EdgeData
+
+Per-edge metadata: `weight` (default 1.0) and `sign` (+1 activation,
+−1 inhibition, 0 unsigned).
+"""
+mutable struct EdgeData
+    weight::Float64
+    sign::Int
+end
+EdgeData(; weight::Float64=1.0, sign::Int=0) = EdgeData(weight, sign)
+
+"""
     PathwayNetwork
 
-Adjacency-list graph with optional edge confidences. Nodes are namespaced
-ID strings (e.g. `"HGNC:8582"`, `"UniProt:P00439"`); edges may be
-directed or undirected, signed or unsigned.
-
-* `adj[src]`           -> Dict(dst => weight)
-* `signs[(src,dst)]`   -> +1 (activation), -1 (inhibition), or 0 (unsigned)
-* `pathways_of[node]`  -> Set of pathway IDs the node belongs to
+Thin wrapper around `MetaGraphsNext.MetaGraph` keyed by string labels
+(e.g. `"HGNC:8582"`, `"UniProt:P00439"`). The underlying graph is a
+`SimpleDiGraph`; undirected edges are simulated by adding both directions.
 """
-mutable struct PathwayNetwork
-    nodes::Set{String}
-    adj::Dict{String,Dict{String,Float64}}
-    signs::Dict{Tuple{String,String},Int}
-    pathways_of::Dict{String,Set{String}}
+struct PathwayNetwork
+    g::Any  # MetaGraph with closure-typed weight_function; parameterizing
+            # buys nothing at the API boundary so we keep this field abstract.
 end
-PathwayNetwork() = PathwayNetwork(
-    Set{String}(),
-    Dict{String,Dict{String,Float64}}(),
-    Dict{Tuple{String,String},Int}(),
-    Dict{String,Set{String}}(),
-)
 
-Base.length(n::PathwayNetwork) = length(n.nodes)
-has_node(n::PathwayNetwork, id) = String(id) in n.nodes
-has_edge(n::PathwayNetwork, a, b) =
-    haskey(n.adj, String(a)) && haskey(n.adj[String(a)], String(b))
+function PathwayNetwork()
+    g = MetaGraph(
+        SimpleDiGraph();
+        label_type=String,
+        vertex_data_type=NodeData,
+        edge_data_type=EdgeData,
+        weight_function=ed -> ed.weight,
+        default_weight=1.0,
+    )
+    return PathwayNetwork(g)
+end
+
+Base.length(n::PathwayNetwork) = nv(n.g)
+has_node(n::PathwayNetwork, id) = haskey(n.g, String(id))
+has_edge(n::PathwayNetwork, a, b) = haskey(n.g, String(a), String(b))
 
 function add_node!(n::PathwayNetwork, id::AbstractString;
                    pathways::Vector{<:AbstractString}=String[])
     s = String(id)
-    push!(n.nodes, s)
-    get!(n.adj, s, Dict{String,Float64}())
+    if !haskey(n.g, s)
+        n.g[s] = NodeData()
+    end
     if !isempty(pathways)
-        bag = get!(n.pathways_of, s, Set{String}())
-        union!(bag, String.(pathways))
+        union!(n.g[s].pathways, String.(pathways))
     end
     return n
 end
@@ -74,51 +98,48 @@ function add_edge_undirected!(n::PathwayNetwork, a, b;
                               weight::Float64=1.0, sign::Int=0)
     add_node!(n, a); add_node!(n, b)
     sa, sb = String(a), String(b)
-    n.adj[sa][sb] = weight
-    n.adj[sb][sa] = weight
-    if sign != 0
-        n.signs[(sa, sb)] = sign
-        n.signs[(sb, sa)] = sign
-    end
+    n.g[sa, sb] = EdgeData(weight, sign)
+    n.g[sb, sa] = EdgeData(weight, sign)
     return n
 end
 
 function add_edge_directed!(n::PathwayNetwork, src, dst;
                             weight::Float64=1.0, sign::Int=0)
     add_node!(n, src); add_node!(n, dst)
-    n.adj[String(src)][String(dst)] = weight
-    sign == 0 || (n.signs[(String(src), String(dst))] = sign)
+    n.g[String(src), String(dst)] = EdgeData(weight, sign)
     return n
 end
 
+# ---------------------------------------------------------------------------
+# Queries — delegated to Graphs.jl
+# ---------------------------------------------------------------------------
+
 """
     neighbors_of(n, id) -> Vector{String}
+
+Out-neighbors of `id` as labels.
 """
-neighbors_of(n::PathwayNetwork, id) =
-    has_node(n, id) ? collect(keys(n.adj[String(id)])) : String[]
+function neighbors_of(n::PathwayNetwork, id)
+    s = String(id)
+    haskey(n.g, s) || return String[]
+    return [label_for(n.g, v) for v in outneighbors(n.g, code_for(n.g, s))]
+end
 
 """
     neighborhood(n, id; radius=1) -> Set{String}
 
-All nodes within `radius` hops of `id`, excluding `id` itself.
+All labels within `radius` hops of `id`, exclusive of `id` itself.
+Uses `Graphs.neighborhood`.
 """
 function neighborhood(n::PathwayNetwork, id; radius::Int=1)
     s = String(id)
-    has_node(n, s) || return Set{String}()
-    frontier = Set{String}([s])
+    haskey(n.g, s) || return Set{String}()
+    code = code_for(n.g, s)
+    codes = Graphs.neighborhood(n.g.graph, code, radius)
     out = Set{String}()
-    for _ in 1:radius
-        next = Set{String}()
-        for u in frontier
-            for v in keys(n.adj[u])
-                if !(v in out) && v != s
-                    push!(out, v)
-                    push!(next, v)
-                end
-            end
-        end
-        frontier = next
-        isempty(frontier) && break
+    for c in codes
+        c == code && continue
+        push!(out, label_for(n.g, c))
     end
     return out
 end
@@ -126,75 +147,56 @@ end
 """
     shortest_path_length(n, src, dst) -> Int
 
-Hop count (BFS, unweighted) from `src` to `dst`. Returns `typemax(Int)`
-if no path exists. `src == dst` returns 0.
+Unweighted hop count via `Graphs.gdistances`. `typemax(Int)` if
+unreachable; `0` if `src == dst`.
 """
 function shortest_path_length(n::PathwayNetwork, src, dst)
     a, b = String(src), String(dst)
-    (has_node(n, a) && has_node(n, b)) || return typemax(Int)
+    (haskey(n.g, a) && haskey(n.g, b)) || return typemax(Int)
     a == b && return 0
-    dist = Dict{String,Int}(a => 0)
-    queue = String[a]
-    while !isempty(queue)
-        u = popfirst!(queue)
-        d = dist[u]
-        for v in keys(n.adj[u])
-            haskey(dist, v) && continue
-            v == b && return d + 1
-            dist[v] = d + 1
-            push!(queue, v)
-        end
-    end
-    return typemax(Int)
+    cs = code_for(n.g, a)
+    ct = code_for(n.g, b)
+    dists = gdistances(n.g.graph, cs)
+    d = dists[ct]
+    return d == typemax(eltype(dists)) ? typemax(Int) : Int(d)
 end
 
 """
     shortest_path(n, src, dst) -> Vector{String}
 
-Reconstruct a shortest path as a node sequence. Empty if unreachable.
+Reconstructed path via `Graphs.a_star`. Empty if unreachable.
 """
 function shortest_path(n::PathwayNetwork, src, dst)
     a, b = String(src), String(dst)
-    (has_node(n, a) && has_node(n, b)) || return String[]
+    (haskey(n.g, a) && haskey(n.g, b)) || return String[]
     a == b && return [a]
-    prev = Dict{String,String}()
-    queue = String[a]
-    found = false
-    while !isempty(queue)
-        u = popfirst!(queue)
-        for v in keys(n.adj[u])
-            (haskey(prev, v) || v == a) && continue
-            prev[v] = u
-            if v == b
-                found = true
-                break
-            end
-            push!(queue, v)
-        end
-        found && break
+    cs = code_for(n.g, a)
+    ct = code_for(n.g, b)
+    edges = a_star(n.g.graph, cs, ct)
+    isempty(edges) && return String[]
+    path = String[label_for(n.g, Graphs.src(first(edges)))]
+    for e in edges
+        push!(path, label_for(n.g, Graphs.dst(e)))
     end
-    found || return String[]
-    path = [b]
-    while path[end] != a
-        push!(path, prev[path[end]])
-    end
-    return reverse(path)
+    return path
 end
 
-"""
-    closest_distance(n, source_set, target_set) -> Float64
+# ---------------------------------------------------------------------------
+# Guney 2016 closest-distance and z-scored proximity
+# ---------------------------------------------------------------------------
 
-Guney 2016 closest-distance: for each source node, take the minimum
-shortest-path-length to any target node; return the mean over sources.
-`Inf` if any source is isolated from every target.
+"""
+    closest_distance(n, sources, targets) -> Float64
+
+Mean over `sources` of `min_{t ∈ targets} d(s, t)`. `Inf` if any source
+is unreachable from every target, or if either set is empty.
 """
 function closest_distance(
     n::PathwayNetwork,
     sources::AbstractVector{<:AbstractString},
     targets::AbstractVector{<:AbstractString},
 )
-    isempty(sources) && return Inf
-    isempty(targets) && return Inf
+    (isempty(sources) || isempty(targets)) && return Inf
     total = 0.0
     count = 0
     for s in sources
@@ -213,11 +215,9 @@ end
 """
     network_proximity_z(n, sources, targets; n_bootstrap=200, rng) -> NamedTuple
 
-Z-score of `closest_distance(sources, targets)` against a degree-matched
-bootstrap. Returns `(d=…, μ=…, σ=…, z=…)`. The simplified degree match
-samples random nodes from the same connected pool — fine for the
-order-of-magnitude scoring this package uses; rigorous degree-stratified
-matching can be slotted in later without changing the API.
+Z-score of `closest_distance` against random source sets sampled from the
+network. Returns `(d, μ, σ, z)`. Degree-stratified sampling can replace
+the uniform sampler later without changing the call site.
 """
 function network_proximity_z(
     n::PathwayNetwork,
@@ -228,13 +228,12 @@ function network_proximity_z(
 )
     d = closest_distance(n, sources, targets)
     isinf(d) && return (d=d, μ=Inf, σ=0.0, z=Inf)
-    all_nodes = collect(n.nodes)
-    isempty(all_nodes) && return (d=d, μ=NaN, σ=NaN, z=NaN)
-
+    all_labels = String[label_for(n.g, v) for v in vertices(n.g)]
+    isempty(all_labels) && return (d=d, μ=NaN, σ=NaN, z=NaN)
     ds = Float64[]
     for _ in 1:n_bootstrap
-        rand_sources = rand(rng, all_nodes, length(sources))
-        push!(ds, closest_distance(n, rand_sources, targets))
+        rs = rand(rng, all_labels, length(sources))
+        push!(ds, closest_distance(n, rs, targets))
     end
     finite = filter(isfinite, ds)
     isempty(finite) && return (d=d, μ=NaN, σ=NaN, z=NaN)
@@ -245,19 +244,16 @@ function network_proximity_z(
     return (d=d, μ=μ, σ=σ, z=z)
 end
 
-# Loader stubs — full SBML/BioPAX/GPML parsers land in a follow-up commit.
+# Loader stubs — SBML/BioPAX/GPML parsers will land via SBMLToolkit + EzXML.
 
-load_reactome(::AbstractString)        = error("load_reactome not yet implemented (Phase 6 cont.)")
-load_wikipathways(::AbstractString)    = error("load_wikipathways not yet implemented (Phase 6 cont.)")
-load_signor(::AbstractString)          = error("load_signor not yet implemented (Phase 6 cont.)")
+load_reactome(::AbstractString)        = error("load_reactome not yet implemented")
+load_wikipathways(::AbstractString)    = error("load_wikipathways not yet implemented")
+load_signor(::AbstractString)          = error("load_signor not yet implemented")
 
 """
     pathways_for_gene(n, id) -> Set{String}
-
-Pathways recorded for a node (populated by `add_node!`'s `pathways=`
-keyword or by future loaders).
 """
 pathways_for_gene(n::PathwayNetwork, id) =
-    get(n.pathways_of, String(id), Set{String}())
+    haskey(n.g, String(id)) ? n.g[String(id)].pathways : Set{String}()
 
 end # module

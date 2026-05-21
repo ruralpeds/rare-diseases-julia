@@ -513,6 +513,38 @@ corresponding integration test.
 
 ---
 
+## 8.6 Ecosystem-First Policy
+
+Per maintainer direction: use existing Julia ecosystem packages instead of
+reimplementing whenever a maintained option exists. Concrete bindings:
+
+| Concern | Package | Notes |
+|---|---|---|
+| ODE / SDE integration | `OrdinaryDiffEq` | `Tsit5` default; `DifferentialEquations` umbrella when needed |
+| Symbolic models | `ModelingToolkit` | underpins Catalyst |
+| Reaction networks / mass-action | `Catalyst` | `@reaction_network` |
+| SBML import | `SBML` + `SBMLToolkit` | for BioModels |
+| Agent-based models | `Agents` | cohort simulations |
+| Graphs (algorithms) | `Graphs` | shortest path, centrality, BFS |
+| Typed property graphs | `MetaGraphsNext` | replaces hand-rolled adjacency |
+| Bio sequences / FASTA / FASTQ | `FASTX` | |
+| Protein structures | `BioStructures` | PDB + mmCIF |
+| Bayesian inference | `Turing` | parameter fits |
+| Sensitivity analysis | `GlobalSensitivity` | Sobol, Morris |
+| Optimization | `Optimization` | unifies Optim/NLopt/etc. |
+| HTTP server / routing | `Oxygen` over `HTTP` | FastAPI-style |
+| HTTP client / downloads | stdlib `Downloads` | |
+| TOML manifests | stdlib `TOML` | |
+
+Hand-rolled retained where no clear ecosystem winner exists:
+
+| Concern | Reason |
+|---|---|
+| OBO ontology parsing | no maintained pure-Julia OBO parser |
+| HGVS nomenclature | no Julia HGVS package (Python `hgvs` via PythonCall is the alternative) |
+| PBPK / QSP templates | no Julia library; will build on `ModelingToolkit` + `Catalyst` |
+| Guney 2016 network proximity | disease-specific scoring layered on `Graphs.jl` |
+
 ## 9. Implementation Progress
 
 Status as of the current commit. Phase numbering follows §3.
@@ -532,13 +564,16 @@ Status as of the current commit. Phase numbering follows §3.
 | 4 | VCF reader + ClinVar/gnomAD lookups | not started |
 | 5–8 | Domain layers (proteomics / pathways / pharmacology / clinical) | API surface only |
 | 9 | Simulation types + `RunManifest` | done |
-| 9 | SciML ODE / PBPK / ABM bodies | not started |
+| 9 | Catalyst PAH/PKU reaction network + OrdinaryDiffEq solve | done |
+| 9 | Agents.jl cohort scaffold | done |
+| 9 | PBPK / QSP physiology templates | not started |
 | 10 | Phenotype-only `rank_diagnoses` | done |
 | 10 | Variant-aware ranking | not started (needs Phase 4 data) |
 | 11 | `TreatmentCandidate` types + evidence tiers | done |
 | 11 | Repurposing scoring + PK/PD integration | not started |
 | 12 | `RDApp` route table | done |
-| 12 | Live REST/WebSocket service | not started |
+| 12 | Oxygen.jl route handlers (returning stubs + banner) | done |
+| 12 | Domain logic wired into each handler | not started |
 
 ## 10. Immediate Next Actions (First Two Weeks)
 

@@ -4,9 +4,11 @@ authors = ["rare-diseases-julia contributors"]
 version = "0.0.1"
 
 [deps]
+FASTX = "c2308a5c-f048-11e8-3e8a-31650f418d12"
 RareDiseaseCore = "11111111-0000-4000-8000-000000000001"
 
 [compat]
+FASTX = "2"
 julia = "1.10"
 
 [extras]
