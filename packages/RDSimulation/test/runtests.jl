@@ -36,6 +36,43 @@ using RDSimulation
         @test steady_phe(:null; bh4=2.0)          ≈ steady_phe(:null) atol=1e-9
     end
 
+    @testset "CFTR class factors and modulator multipliers" begin
+        @test cftr_class_factor(:wildtype) == 1.0
+        @test cftr_class_factor(:I) == 0.0
+        @test cftr_class_factor(:II) < cftr_class_factor(:III) <
+              cftr_class_factor(:IV) < cftr_class_factor(:wildtype)
+        @test_throws ArgumentError cftr_class_factor(:bogus)
+
+        # Ivacaftor potentiates class III but not class I
+        @test cftr_modulator_factor(; class=:III, ivacaftor=true) > 1.0
+        @test cftr_modulator_factor(; class=:I,   ivacaftor=true) == 1.0
+        # Trikafta on class II compounds three modulators
+        triple = cftr_modulator_factor(; class=:II,
+            tezacaftor=true, elexacaftor=true, ivacaftor=true)
+        only_tez = cftr_modulator_factor(; class=:II, tezacaftor=true)
+        @test triple > only_tez > 1.0
+    end
+
+    @testset "CFTR/CF ASL model — modulators raise steady-state ASL" begin
+        function steady_asl(class; mods=(;))
+            prob = cftr_cf_problem(; class=class, modulators=mods,
+                                    tspan=(0.0, 48.0))
+            sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+            return sol.u[end][1]
+        end
+        # F508del/F508del (class II) on Trikafta beats untreated
+        untreated = steady_asl(:II)
+        trikafta  = steady_asl(:II;
+            mods=(; tezacaftor=true, elexacaftor=true, ivacaftor=true))
+        @test trikafta > untreated
+
+        # G551D (class III) responds to ivacaftor
+        @test steady_asl(:III; mods=(; ivacaftor=true)) > steady_asl(:III)
+
+        # Class I gets no benefit from modulators
+        @test steady_asl(:I; mods=(; ivacaftor=true)) ≈ steady_asl(:I) atol=1e-9
+    end
+
     @testset "Sapropterin PBPK — peak after absorption then decay" begin
         prob = sapropterin_pbpk_problem(; dose_mg=10.0, tspan=(0.0, 24.0))
         sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
