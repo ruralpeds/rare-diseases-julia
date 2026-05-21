@@ -31,6 +31,7 @@ using RareDiseaseCore
 include("models/pah_pku.jl")
 include("models/sapropterin_pbpk.jl")
 include("models/cftr_cf.jl")
+include("models/hbs_scd.jl")
 include("biomodels.jl")
 include("cohort.jl")
 
@@ -45,6 +46,8 @@ export
     SAPROPTERIN_PBPK, sapropterin_pbpk_problem,
     # CFTR / CF
     CFTR_CF, cftr_class_factor, cftr_modulator_factor, cftr_cf_problem,
+    # HbS / sickle cell
+    HBS_SCD, hbs_scd_problem,
     # BioModels
     load_biomodel,
     # Cohort

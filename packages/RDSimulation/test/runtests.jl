@@ -73,6 +73,19 @@ using RDSimulation
         @test steady_asl(:I; mods=(; ivacaftor=true)) ≈ steady_asl(:I) atol=1e-9
     end
 
+    @testset "HbS / sickle cell — HbF dose-response on polymerization" begin
+        function steady_poly(hbf)
+            prob = hbs_scd_problem(; hbf_fraction=hbf, tspan=(0.0, 50.0))
+            sol  = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+            return sol.u[end][2]   # polymer fraction (species 2)
+        end
+        baseline  = steady_poly(0.01)
+        on_hu     = steady_poly(0.15)
+        on_genetx = steady_poly(0.40)
+        @test 0.0 ≤ on_genetx ≤ on_hu ≤ baseline ≤ 1.0
+        @test baseline - on_hu > 0.05   # therapy makes a measurable dent
+    end
+
     @testset "Sapropterin PBPK — peak after absorption then decay" begin
         prob = sapropterin_pbpk_problem(; dose_mg=10.0, tspan=(0.0, 24.0))
         sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
