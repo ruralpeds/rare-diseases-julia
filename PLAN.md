@@ -587,7 +587,8 @@ Status as of the current commit. Phase numbering follows §3.
 | 11 | PK/PD feasibility integration | not started |
 | 12 | `RDApp` route table | done |
 | 12 | Oxygen.jl route handlers (returning stubs + banner) | done |
-| 12 | Domain logic wired into each handler | not started |
+| 12 | Domain logic wired into `/diagnose`, `/simulate`, `/treatments` | done |
+| 12 | WebSocket streaming for long simulations | not started |
 | 12 | Documenter site + Docs.yml workflow | done |
 | 12 | Pluto notebooks for PKU + CF + SCD with runnable code | done |
 
