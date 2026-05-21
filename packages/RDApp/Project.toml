@@ -4,9 +4,21 @@ authors = ["rare-diseases-julia contributors"]
 version = "0.0.1"
 
 [deps]
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Oxygen = "df9a0d86-3283-4920-82dc-4555fc0d1d8b"
+RDDiagnostics = "11111111-0000-4000-8000-000000000009"
+RDOntology = "11111111-0000-4000-8000-000000000003"
+RDPathways = "11111111-0000-4000-8000-000000000006"
+RDSimulation = "11111111-0000-4000-8000-000000000010"
+RDTreatment = "11111111-0000-4000-8000-000000000011"
 RareDiseaseCore = "11111111-0000-4000-8000-000000000001"
 
 [compat]
+HTTP = "1"
+JSON3 = "1"
+Oxygen = "1"
 julia = "1.10"
 
 [extras]

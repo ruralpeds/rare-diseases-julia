@@ -513,7 +513,86 @@ corresponding integration test.
 
 ---
 
-## 9. Immediate Next Actions (First Two Weeks)
+## 8.6 Ecosystem-First Policy
+
+Per maintainer direction: use existing Julia ecosystem packages instead of
+reimplementing whenever a maintained option exists. Concrete bindings:
+
+| Concern | Package | Notes |
+|---|---|---|
+| ODE / SDE integration | `OrdinaryDiffEq` | `Tsit5` default; `DifferentialEquations` umbrella when needed |
+| Symbolic models | `ModelingToolkit` | underpins Catalyst |
+| Reaction networks / mass-action | `Catalyst` | `@reaction_network` |
+| SBML import | `SBML` + `SBMLToolkit` | for BioModels |
+| Agent-based models | `Agents` | cohort simulations |
+| Graphs (algorithms) | `Graphs` | shortest path, centrality, BFS |
+| Typed property graphs | `MetaGraphsNext` | replaces hand-rolled adjacency |
+| Bio sequences / FASTA / FASTQ | `FASTX` | |
+| Protein structures | `BioStructures` | PDB + mmCIF |
+| Bayesian inference | `Turing` | parameter fits |
+| Sensitivity analysis | `GlobalSensitivity` | Sobol, Morris |
+| Optimization | `Optimization` | unifies Optim/NLopt/etc. |
+| HTTP server / routing | `Oxygen` over `HTTP` | FastAPI-style |
+| HTTP client / downloads | stdlib `Downloads` | |
+| TOML manifests | stdlib `TOML` | |
+
+Hand-rolled retained where no clear ecosystem winner exists:
+
+| Concern | Reason |
+|---|---|
+| OBO ontology parsing | no maintained pure-Julia OBO parser |
+| HGVS nomenclature | no Julia HGVS package (Python `hgvs` via PythonCall is the alternative) |
+| PBPK / QSP templates | no Julia library; will build on `ModelingToolkit` + `Catalyst` |
+| Guney 2016 network proximity | disease-specific scoring layered on `Graphs.jl` |
+
+## 9. Implementation Progress
+
+Status as of the current commit. Phase numbering follows §3.
+
+| Phase | Component | Status |
+|---|---|---|
+| 1 | Monorepo + CI + licensing + ETHICS | done |
+| 1 | `RareDiseaseCore` identifier types + provenance | done |
+| 2 | `RDDataSources` `Source` trait + registry | done |
+| 2 | Reference `HPOSource` manifest | done |
+| 2 | HTTP downloader + content-addressed cache + sha256 verify + manifest writer | done |
+| 2 | Parquet/Arrow processed-data writer | not started |
+| 3 | OBO parser (`HPO`/`MONDO`/`Orphanet` shaped) | done |
+| 3 | `OntologyGraph` with `ancestors`/`descendants`/`is_a`/`resolve_xref` | done |
+| 3 | Information content + Resnik / Lin / Jiang-Conrath similarity | done |
+| 4 | HGVS `.c` / `.p` parser | done |
+| 4 | ACMG evidence accumulator + Richards 2015 combining rules | done |
+| 4 | VCF reader + ClinVar/gnomAD lookups | not started |
+| 5 | `RDProteomics` API + BioStructures pass-through | done |
+| 5 | UniProt + AlphaFold ingestion | not started |
+| 6 | Graphs.jl + MetaGraphsNext-backed `PathwayNetwork` | done |
+| 6 | BFS / shortest-path / neighborhood queries | done |
+| 6 | Guney 2016 closest-distance + z-scored network proximity | done |
+| 6 | Reactome / SIGNOR / WikiPathways loaders | not started |
+| 7 | `RDPharmacology` API surface | done |
+| 7 | ChEMBL SQLite ingestion + drugs-for-target query | not started |
+| 8 | `RDClinical` API surface | done |
+| 8 | AACT / FAERS loaders | not started |
+| 9 | Simulation types + `RunManifest` | done |
+| 9 | Catalyst PAH/PKU reaction network + OrdinaryDiffEq solve | done |
+| 9 | Sapropterin one-compartment PBPK | done |
+| 9 | CFTR/CF ASL-volume model with variant classes + modulators | done |
+| 9 | HbS/SCD polymerization with HbF inhibition | done |
+| 9 | `Agents.jl` cohort scaffold | done |
+| 9 | SBML/SBMLToolkit BioModels loader | done |
+| 10 | Phenotype-only `rank_diagnoses` | done |
+| 10 | Variant-aware ranking | not started (needs Phase 4 data) |
+| 11 | `TreatmentCandidate` types + evidence tiers | done |
+| 11 | Network-proximity-driven `rank_treatments` | done |
+| 11 | PK/PD feasibility integration | not started |
+| 12 | `RDApp` route table | done |
+| 12 | Oxygen.jl route handlers (returning stubs + banner) | done |
+| 12 | Domain logic wired into `/diagnose`, `/simulate`, `/treatments` | done |
+| 12 | WebSocket streaming for long simulations | not started |
+| 12 | Documenter site + Docs.yml workflow | done |
+| 12 | Pluto notebooks for PKU + CF + SCD with runnable code | done |
+
+## 10. Immediate Next Actions (First Two Weeks)
 
 1. Land this `PLAN.md` on `main`.
 2. Scaffold `packages/RareDiseaseCore.jl` with identifier types and tests.
