@@ -4,6 +4,7 @@ authors = ["rare-diseases-julia contributors"]
 version = "0.0.1"
 
 [deps]
+RDOntology = "11111111-0000-4000-8000-000000000003"
 RareDiseaseCore = "11111111-0000-4000-8000-000000000001"
 
 [compat]

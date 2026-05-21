@@ -513,7 +513,34 @@ corresponding integration test.
 
 ---
 
-## 9. Immediate Next Actions (First Two Weeks)
+## 9. Implementation Progress
+
+Status as of the current commit. Phase numbering follows §3.
+
+| Phase | Component | Status |
+|---|---|---|
+| 1 | Monorepo + CI + licensing + ETHICS | done |
+| 1 | `RareDiseaseCore` identifier types + provenance | done |
+| 2 | `RDDataSources` `Source` trait + registry | done |
+| 2 | Reference `HPOSource` manifest | done |
+| 2 | Real HTTP fetcher + Parquet writer | not started |
+| 3 | OBO parser (`HPO`/`MONDO`/`Orphanet` shaped) | done |
+| 3 | `OntologyGraph` with `ancestors`/`descendants`/`is_a`/`resolve_xref` | done |
+| 3 | Information content + Resnik / Lin / Jiang-Conrath similarity | done |
+| 4 | HGVS `.c` / `.p` parser | done |
+| 4 | ACMG evidence accumulator + Richards 2015 combining rules | done |
+| 4 | VCF reader + ClinVar/gnomAD lookups | not started |
+| 5–8 | Domain layers (proteomics / pathways / pharmacology / clinical) | API surface only |
+| 9 | Simulation types + `RunManifest` | done |
+| 9 | SciML ODE / PBPK / ABM bodies | not started |
+| 10 | Phenotype-only `rank_diagnoses` | done |
+| 10 | Variant-aware ranking | not started (needs Phase 4 data) |
+| 11 | `TreatmentCandidate` types + evidence tiers | done |
+| 11 | Repurposing scoring + PK/PD integration | not started |
+| 12 | `RDApp` route table | done |
+| 12 | Live REST/WebSocket service | not started |
+
+## 10. Immediate Next Actions (First Two Weeks)
 
 1. Land this `PLAN.md` on `main`.
 2. Scaffold `packages/RareDiseaseCore.jl` with identifier types and tests.

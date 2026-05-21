@@ -1,0 +1,50 @@
+format-version: 1.2
+ontology: hp
+
+[Term]
+id: HP:0000001
+name: All
+
+[Term]
+id: HP:0000118
+name: Phenotypic abnormality
+is_a: HP:0000001 ! All
+
+[Term]
+id: HP:0000707
+name: Abnormality of the nervous system
+is_a: HP:0000118 ! Phenotypic abnormality
+
+[Term]
+id: HP:0012638
+name: Abnormality of nervous system physiology
+is_a: HP:0000707 ! Abnormality of the nervous system
+
+[Term]
+id: HP:0001250
+name: Seizure
+synonym: "Seizures" EXACT [HPO:probinson]
+synonym: "Epileptic seizure" RELATED []
+xref: UMLS:C0036572
+is_a: HP:0012638 ! Abnormality of nervous system physiology
+
+[Term]
+id: HP:0001249
+name: Intellectual disability
+synonym: "Mental retardation" EXACT []
+is_a: HP:0012638 ! Abnormality of nervous system physiology
+
+[Term]
+id: HP:0000478
+name: Abnormality of the eye
+is_a: HP:0000118 ! Phenotypic abnormality
+
+[Term]
+id: HP:0000505
+name: Visual impairment
+is_a: HP:0000478 ! Abnormality of the eye
+
+[Term]
+id: HP:9999999
+name: An obsolete term
+is_obsolete: true
