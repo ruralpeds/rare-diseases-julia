@@ -29,6 +29,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
         run: |
+          julia --project=. -e '
+            using Pkg
+            for p in readdir("packages"; join=false)
+              Pkg.develop(PackageSpec(path=joinpath("packages", p)))
+            end
+            Pkg.instantiate()
+          '
           julia --project=docs -e '
             using Pkg
             for p in readdir("packages"; join=false)
