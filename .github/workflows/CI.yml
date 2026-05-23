@@ -38,10 +38,19 @@ jobs:
       - uses: julia-actions/cache@v2
       - name: Test ${{ matrix.package }}
         run: |
-          julia --project=packages/${{ matrix.package }} -e '
+          julia --project=. -e '
             using Pkg
             for p in readdir("packages"; join=false)
               Pkg.develop(PackageSpec(path=joinpath("packages", p)))
+            end
+            Pkg.instantiate()
+          '
+          julia --project=packages/${{ matrix.package }} -e '
+            using Pkg
+            for p in readdir("packages"; join=false)
+              if p != "${{ matrix.package }}"
+                Pkg.develop(PackageSpec(path=joinpath("packages", p)))
+              end
             end
             Pkg.instantiate()
             Pkg.test()
