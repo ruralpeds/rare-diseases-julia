@@ -27,7 +27,10 @@ export
     manifest, fetch!, parse_source,
     register_source!, registered_sources,
     cache_path, update_manifest!,
-    HPOSource
+    HPOSource,
+    IEDBSource,
+    ImmPortSource,
+    IMGTSource
 
 abstract type AbstractSource end
 
@@ -231,5 +234,157 @@ end
 # that lives in RDOntology and is wired up by callers via load_hpo(path).
 
 register_source!(HPOSource, "HPO")
+
+# ---------------------------------------------------------------------------
+# Reference source: IEDB
+# source: IEDB
+# ---------------------------------------------------------------------------
+
+"""
+    IEDBSource()
+
+Downloader for the Immune Epitope Database (IEDB) comprehensive exports.
+"""
+struct IEDBSource <: AbstractSource end
+
+function manifest(s::IEDBSource)
+    SourceManifest(
+        name="IEDB",
+        urls=["https://www.iedb.org/downloader.php?file_name=doc/mhc_ligand_full.zip"], # Example full dump URL, can add tcell/bcell
+        license="CC-BY-4.0",
+        citation="Vita R, et al. NAR 2019. PMID:30357391",
+        notes="Immune Epitope Database",
+    )
+end
+
+function parse_source(s::IEDBSource, paths::AbstractVector{<:AbstractString})
+    # Basic rigorous parser for CSV/TSV format of IEDB exports using Base Julia.
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+
+    for path in paths
+        # Usually it's a zip file. If it were unzipped to a CSV/TSV, we would parse it like this:
+        # Since we don't have ZipFile.jl in the environment right now, we assume the user
+        # has unzipped it or we are parsing a plain CSV/TSV file directly.
+        if isfile(path)
+            open(path, "r") do io
+                header = split(readline(io), ',') # Assuming CSV for now
+                for line in eachline(io)
+                    isempty(strip(line)) && continue
+                    parts = split(line, ',')
+
+                    # Create a basic record mapping headers to values
+                    record = Dict{String, Any}()
+                    for (i, h) in enumerate(header)
+                        if i <= length(parts)
+                            record[strip(h, '"')] = strip(parts[i], '"')
+                        end
+                    end
+                    push!(parsed_records, record)
+                end
+            end
+        end
+    end
+
+    return parsed_records
+end
+
+register_source!(IEDBSource, "IEDB")
+
+# ---------------------------------------------------------------------------
+# Reference source: ImmPort
+# source: ImmPort
+# ---------------------------------------------------------------------------
+
+"""
+    ImmPortSource()
+
+Downloader for ImmPort (Immunology Database and Analysis Portal) datasets.
+"""
+struct ImmPortSource <: AbstractSource end
+
+function manifest(s::ImmPortSource)
+    SourceManifest(
+        name="ImmPort",
+        urls=["https://immport.niaid.nih.gov/immport-open/public/download/studyData/SDY269"], # Example study
+        license="CC-BY-4.0",
+        citation="Bhattacharya S, et al. Sci Data 2018. PMID:29485622",
+        notes="Immunology Database and Analysis Portal",
+    )
+end
+
+function parse_source(s::ImmPortSource, paths::AbstractVector{<:AbstractString})
+    # Basic TSV parser for ImmPort data
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+
+    for path in paths
+        if isfile(path)
+            open(path, "r") do io
+                header = split(readline(io), '\t')
+                for line in eachline(io)
+                    isempty(strip(line)) && continue
+                    parts = split(line, '\t')
+
+                    record = Dict{String, Any}()
+                    for (i, h) in enumerate(header)
+                        if i <= length(parts)
+                            record[strip(h, '"')] = strip(parts[i], '"')
+                        end
+                    end
+                    push!(parsed_records, record)
+                end
+            end
+        end
+    end
+
+    return parsed_records
+end
+
+register_source!(ImmPortSource, "ImmPort")
+
+# ---------------------------------------------------------------------------
+# Reference source: IMGT
+# source: IMGT
+# ---------------------------------------------------------------------------
+
+"""
+    IMGTSource()
+
+Downloader for IMGT (the international ImMunoGeneTics information system).
+"""
+struct IMGTSource <: AbstractSource end
+
+function manifest(s::IMGTSource)
+    SourceManifest(
+        name="IMGT",
+        urls=["https://www.imgt.org/download/LIGM-DB/imgt.dat.Z"], # Main database export
+        license="CC-BY-NC-ND-4.0",
+        citation="Lefranc MP, et al. NAR 2015. PMID:25378316",
+        notes="international ImMunoGeneTics information system",
+    )
+end
+
+function parse_source(s::IMGTSource, paths::AbstractVector{<:AbstractString})
+    # Placeholder for IMGT parser, which uses EMBL-like plain text format
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+    for path in paths
+        push!(parsed_records, Dict("source_path" => path, "status" => "embl_format_parsing_pending"))
+    end
+
+    return parsed_records
+end
+
+register_source!(IMGTSource, "IMGT")
 
 end # module
