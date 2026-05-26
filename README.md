@@ -37,6 +37,7 @@ packages/
   RDDiagnostics.jl     — phenotype + variant differential ranking
   RDSimulation.jl      — ODE / PBPK / ABM disease models
   RDTreatment.jl       — drug-target effect and repurposing
+  RDImmunology.jl      — comprehensive immune ecosystem base types
   RDApp.jl             — REST + WebSocket service, HTMX UI
 data/
   SOURCES.tsv          — canonical source registry (license, sha, version)

@@ -32,12 +32,16 @@ include("models/pah_pku.jl")
 include("models/sapropterin_pbpk.jl")
 include("models/cftr_cf.jl")
 include("models/hbs_scd.jl")
+include("models/immunology.jl")
 include("biomodels.jl")
 include("cohort.jl")
 
 export
     # Reproducibility
     RunManifest, SimulationResult,
+    # Immunology
+    IMMUNOLOGY_BASE, default_immunology_parameters, immunology_base_problem,
+    ImmuneCellAgent, build_tissue_abm,
     # PKU model + helpers
     PAH_PKU, default_pah_parameters,
     pah_residual_activity, variant_effect,
