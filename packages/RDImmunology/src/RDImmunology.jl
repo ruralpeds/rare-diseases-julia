@@ -10,8 +10,7 @@ module RDImmunology
 
 using RareDiseaseCore
 
-export
-    AbstractImmuneComponent,
+export AbstractImmuneComponent,
     AbstractImmuneCell,
     AbstractCytokine,
     AbstractReceptor,

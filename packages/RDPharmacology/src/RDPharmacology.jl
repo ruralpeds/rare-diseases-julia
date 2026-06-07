@@ -20,9 +20,7 @@ module RDPharmacology
 
 using RareDiseaseCore
 
-export
-    Bioactivity,
-    drugs_for_target, orphan_designations_for, indications_for
+export Bioactivity, drugs_for_target, orphan_designations_for, indications_for
 
 """
     Bioactivity
@@ -38,11 +36,14 @@ struct Bioactivity
     source::String
 end
 
-drugs_for_target(::UniProtAcc; max_um::Float64=1.0) =
-    error("drugs_for_target not yet implemented (Phase 7)")
-orphan_designations_for(::MondoId) =
-    error("orphan_designations_for not yet implemented (Phase 7)")
-indications_for(::Union{RxCui,ChemblId}) =
-    error("indications_for not yet implemented (Phase 7)")
+function drugs_for_target(::UniProtAcc; max_um::Float64=1.0)
+    return error("drugs_for_target not yet implemented (Phase 7)")
+end
+function orphan_designations_for(::MondoId)
+    return error("orphan_designations_for not yet implemented (Phase 7)")
+end
+function indications_for(::Union{RxCui, ChemblId})
+    return error("indications_for not yet implemented (Phase 7)")
+end
 
 end # module

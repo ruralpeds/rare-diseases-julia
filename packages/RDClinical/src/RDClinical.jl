@@ -16,9 +16,7 @@ module RDClinical
 
 using RareDiseaseCore
 
-export
-    AdverseEventSignal,
-    trials_for, adverse_event_signals, disease_summary
+export AdverseEventSignal, trials_for, adverse_event_signals, disease_summary
 
 """
     AdverseEventSignal
@@ -34,8 +32,10 @@ struct AdverseEventSignal
     ror::Float64
 end
 
-trials_for(::MondoId)              = error("trials_for not yet implemented (Phase 8)")
-adverse_event_signals(::String)    = error("adverse_event_signals not yet implemented (Phase 8)")
-disease_summary(::MondoId)         = error("disease_summary not yet implemented (Phase 8)")
+trials_for(::MondoId) = error("trials_for not yet implemented (Phase 8)")
+function adverse_event_signals(::String)
+    return error("adverse_event_signals not yet implemented (Phase 8)")
+end
+disease_summary(::MondoId) = error("disease_summary not yet implemented (Phase 8)")
 
 end # module

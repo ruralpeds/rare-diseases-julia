@@ -14,6 +14,7 @@ const PACKAGES = [
     "RDOntology",
     "RDGenomics",
     "RDProteomics",
+    "RDImmunology",
     "RDPathways",
     "RDPharmacology",
     "RDClinical",
@@ -23,11 +24,13 @@ const PACKAGES = [
     "RDApp",
 ]
 
+paths = String[]
 for p in PACKAGES
     path = joinpath(@__DIR__, "..", "packages", p)
-    @info "dev $p" path
-    Pkg.develop(PackageSpec(path=path))
+    @info "queue dev $p" path
+    push!(paths, path)
 end
+Pkg.develop([PackageSpec(; path=p) for p in paths])
 
 Pkg.instantiate()
 Pkg.precompile()

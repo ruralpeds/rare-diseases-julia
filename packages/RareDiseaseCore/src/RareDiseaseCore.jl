@@ -14,16 +14,41 @@ using SHA
 
 export
     # Identifier types
-    HPOId, MondoId, OrphaId, OmimId, DoId, MeshId,
-    HgncId, EnsemblGeneId, EnsemblTranscriptId, RefSeqId, UniProtAcc,
-    ClinVarId, DbSnpId, PubMedId, PmcId, RxCui, ChemblId, PubChemCid,
-    ReactomeId, PfamId, InterProId,
+    HPOId,
+    MondoId,
+    OrphaId,
+    OmimId,
+    DoId,
+    MeshId,
+    HgncId,
+    EnsemblGeneId,
+    EnsemblTranscriptId,
+    RefSeqId,
+    UniProtAcc,
+    ClinVarId,
+    DbSnpId,
+    PubMedId,
+    PmcId,
+    RxCui,
+    ChemblId,
+    PubChemCid,
+    ReactomeId,
+    PfamId,
+    InterProId,
     # Provenance
     DataProvenance,
     # Base records
-    Disease, Phenotype, Gene, Variant, Protein, Drug, Trial, Pathway,
+    Disease,
+    Phenotype,
+    Gene,
+    Variant,
+    Protein,
+    Drug,
+    Trial,
+    Pathway,
     # Helpers
-    cite, sha256_file
+    cite,
+    sha256_file
 
 # ---------------------------------------------------------------------------
 # Identifier types
@@ -33,7 +58,7 @@ abstract type AbstractId end
 
 Base.show(io::IO, id::AbstractId) = print(io, idstring(id))
 Base.string(id::AbstractId) = idstring(id)
-Base.:(==)(a::T, b::T) where {T<:AbstractId} = idstring(a) == idstring(b)
+Base.:(==)(a::T, b::T) where {T <: AbstractId} = idstring(a) == idstring(b)
 Base.hash(id::AbstractId, h::UInt) = hash((typeof(id), idstring(id)), h)
 
 # Each identifier validates its format at construction. We reject empties and
@@ -78,7 +103,7 @@ struct MeshId <: AbstractId
         # MeSH descriptors are e.g. "D012173", "C535309"
         m = match(r"^[A-Z]\d{6,7}$", s)
         m === nothing && throw(ArgumentError("invalid MeSH id '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 
@@ -92,7 +117,7 @@ struct EnsemblGeneId <: AbstractId
     function EnsemblGeneId(s::AbstractString)
         m = match(r"^ENS[A-Z]{0,3}G\d{11}(\.\d+)?$", s)
         m === nothing && throw(ArgumentError("invalid Ensembl gene id '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 struct EnsemblTranscriptId <: AbstractId
@@ -100,7 +125,7 @@ struct EnsemblTranscriptId <: AbstractId
     function EnsemblTranscriptId(s::AbstractString)
         m = match(r"^ENS[A-Z]{0,3}T\d{11}(\.\d+)?$", s)
         m === nothing && throw(ArgumentError("invalid Ensembl transcript id '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 struct RefSeqId <: AbstractId
@@ -108,7 +133,7 @@ struct RefSeqId <: AbstractId
     function RefSeqId(s::AbstractString)
         m = match(r"^[NX][MRP]_\d+(\.\d+)?$", s)
         m === nothing && throw(ArgumentError("invalid RefSeq id '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 
@@ -117,9 +142,11 @@ struct UniProtAcc <: AbstractId
     value::String
     function UniProtAcc(s::AbstractString)
         # Canonical UniProt accession regex from UniProt's docs.
-        m = match(r"^[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}$", s)
+        m = match(
+            r"^[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2}$", s
+        )
         m === nothing && throw(ArgumentError("invalid UniProt accession '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 
@@ -128,7 +155,7 @@ struct ClinVarId <: AbstractId
     value::String
     function ClinVarId(s::AbstractString)
         all(isdigit, s) || throw(ArgumentError("ClinVar id must be digits, got '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 struct DbSnpId <: AbstractId
@@ -141,7 +168,7 @@ struct PubMedId <: AbstractId
     value::String
     function PubMedId(s::AbstractString)
         all(isdigit, s) || throw(ArgumentError("PMID must be digits, got '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 struct PmcId <: AbstractId
@@ -154,7 +181,7 @@ struct RxCui <: AbstractId
     value::String
     function RxCui(s::AbstractString)
         all(isdigit, s) || throw(ArgumentError("RxCUI must be digits, got '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 struct ChemblId <: AbstractId
@@ -165,7 +192,7 @@ struct PubChemCid <: AbstractId
     value::String
     function PubChemCid(s::AbstractString)
         all(isdigit, s) || throw(ArgumentError("PubChem CID must be digits, got '$s'"))
-        new(String(s))
+        return new(String(s))
     end
 end
 
@@ -201,11 +228,14 @@ struct DataProvenance
     version::String
     sha256::String
     retrieved_at::DateTime
-    url::Union{Nothing,String}
-    citation::Union{Nothing,String}
+    url::Union{Nothing, String}
+    citation::Union{Nothing, String}
 end
-DataProvenance(source, version, sha256, retrieved_at; url=nothing, citation=nothing) =
-    DataProvenance(source, version, sha256, retrieved_at, url, citation)
+function DataProvenance(
+    source, version, sha256, retrieved_at; url=nothing, citation=nothing
+)
+    return DataProvenance(source, version, sha256, retrieved_at, url, citation)
+end
 
 # ---------------------------------------------------------------------------
 # Base records
@@ -218,7 +248,7 @@ DataProvenance(source, version, sha256, retrieved_at; url=nothing, citation=noth
 struct Phenotype
     id::HPOId
     name::String
-    definition::Union{Nothing,String}
+    definition::Union{Nothing, String}
     provenance::DataProvenance
 end
 
@@ -228,15 +258,15 @@ struct Disease
     synonyms::Vector{String}
     xrefs::Vector{String}              # cross-ref IDs as namespaced strings
     inheritance::Vector{String}        # e.g. ["autosomal_recessive"]
-    prevalence::Union{Nothing,Float64} # per 100,000 if known
+    prevalence::Union{Nothing, Float64} # per 100,000 if known
     provenance::DataProvenance
 end
 
 struct Gene
     hgnc::HgncId
     symbol::String
-    ensembl::Union{Nothing,EnsemblGeneId}
-    chromosome::Union{Nothing,String}
+    ensembl::Union{Nothing, EnsemblGeneId}
+    chromosome::Union{Nothing, String}
     provenance::DataProvenance
 end
 
@@ -246,10 +276,10 @@ struct Variant
     ref::String
     alt::String
     assembly::String              # "GRCh37" | "GRCh38"
-    clinvar::Union{Nothing,ClinVarId}
-    rsid::Union{Nothing,DbSnpId}
-    hgvs_c::Union{Nothing,String}
-    hgvs_p::Union{Nothing,String}
+    clinvar::Union{Nothing, ClinVarId}
+    rsid::Union{Nothing, DbSnpId}
+    hgvs_c::Union{Nothing, String}
+    hgvs_p::Union{Nothing, String}
     provenance::DataProvenance
 end
 
@@ -257,13 +287,13 @@ struct Protein
     accession::UniProtAcc
     name::String
     length::Int
-    gene_symbol::Union{Nothing,String}
+    gene_symbol::Union{Nothing, String}
     provenance::DataProvenance
 end
 
 struct Drug
-    rxcui::Union{Nothing,RxCui}
-    chembl::Union{Nothing,ChemblId}
+    rxcui::Union{Nothing, RxCui}
+    chembl::Union{Nothing, ChemblId}
     name::String
     is_approved::Bool
     orphan_designations::Vector{String}  # disease names or MONDO strings
@@ -272,7 +302,7 @@ end
 
 struct Trial
     nct_id::String
-    phase::Union{Nothing,String}
+    phase::Union{Nothing, String}
     status::String
     conditions::Vector{String}
     interventions::Vector{String}

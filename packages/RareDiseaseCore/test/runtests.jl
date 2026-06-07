@@ -3,7 +3,6 @@ using Dates
 using RareDiseaseCore
 
 @testset "RareDiseaseCore" begin
-
     @testset "Identifier parsing — happy path" begin
         @test string(HPOId("HP:0001250")) == "HP:0001250"
         @test string(MondoId("MONDO:0009861")) == "MONDO:0009861"
@@ -58,7 +57,10 @@ using RareDiseaseCore
 
     @testset "DataProvenance + cite" begin
         prov = DataProvenance(
-            "HPO", "2024-12-12", "deadbeef", DateTime(2025, 1, 2, 3, 4, 5);
+            "HPO",
+            "2024-12-12",
+            "deadbeef",
+            DateTime(2025, 1, 2, 3, 4, 5);
             url="https://hpo.jax.org",
             citation="Köhler S, et al. NAR 2021. PMID:33264411",
         )

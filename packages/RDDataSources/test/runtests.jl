@@ -9,26 +9,25 @@ using RareDiseaseCore: sha256_file
 mutable struct _LocalSource <: RDDataSources.AbstractSource
     url::String
 end
-RDDataSources.manifest(s::_LocalSource) =
-    RDDataSources.SourceManifest(
-        name="LOCAL_TEST",
-        urls=[s.url],
-        license="CC0",
-        citation="test",
+function RDDataSources.manifest(s::_LocalSource)
+    return RDDataSources.SourceManifest(
+        name="LOCAL_TEST", urls=[s.url], license="CC0", citation="test"
     )
+end
 
 mutable struct _BadShaSource <: RDDataSources.AbstractSource
     url::String
     expected::String
 end
-RDDataSources.manifest(s::_BadShaSource) =
-    RDDataSources.SourceManifest(
+function RDDataSources.manifest(s::_BadShaSource)
+    return RDDataSources.SourceManifest(
         name="BAD",
         urls=[s.url],
         license="CC0",
         citation="test",
         expected_sha256=[s.expected],
     )
+end
 
 @testset "RDDataSources" begin
     @testset "Registry" begin
@@ -79,8 +78,11 @@ RDDataSources.manifest(s::_BadShaSource) =
         mktempdir() do dir
             tomlpath = joinpath(dir, "manifest.toml")
             ff = RDDataSources.FetchedFile(
-                joinpath(dir, "x"), "deadbeef", "https://example/x",
-                DateTime(2026, 1, 2, 3, 4, 5), 7,
+                joinpath(dir, "x"),
+                "deadbeef",
+                "https://example/x",
+                DateTime(2026, 1, 2, 3, 4, 5),
+                7,
             )
             update_manifest!(tomlpath, "HPO", [ff])
             data = TOML.parsefile(tomlpath)
@@ -92,8 +94,11 @@ RDDataSources.manifest(s::_BadShaSource) =
             @test entry["bytes"] == 7
 
             ff2 = RDDataSources.FetchedFile(
-                joinpath(dir, "y"), "f00", "https://example/y",
-                DateTime(2026, 2, 3, 4, 5, 6), 11,
+                joinpath(dir, "y"),
+                "f00",
+                "https://example/y",
+                DateTime(2026, 2, 3, 4, 5, 6),
+                11,
             )
             update_manifest!(tomlpath, "MONDO", [ff2])
             data2 = TOML.parsefile(tomlpath)

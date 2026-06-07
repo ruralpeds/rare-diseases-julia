@@ -18,9 +18,8 @@ module RDDiagnostics
 using RareDiseaseCore
 using RDOntology
 
-export
-    PatientCase, DifferentialCandidate, DifferentialDiagnosis,
-    rank_diagnoses, NOT_FOR_CLINICAL_USE
+export PatientCase,
+    DifferentialCandidate, DifferentialDiagnosis, rank_diagnoses, NOT_FOR_CLINICAL_USE
 
 """
     PatientCase
@@ -31,10 +30,10 @@ are free-form for now.
 """
 Base.@kwdef struct PatientCase
     phenotypes_present::Vector{HPOId} = HPOId[]
-    phenotypes_absent::Vector{HPOId}  = HPOId[]
-    variants::Vector{Variant}         = Variant[]
-    demographics::Dict{Symbol,Any}    = Dict{Symbol,Any}()
-    family_history::Vector{String}    = String[]
+    phenotypes_absent::Vector{HPOId} = HPOId[]
+    variants::Vector{Variant} = Variant[]
+    demographics::Dict{Symbol, Any} = Dict{Symbol, Any}()
+    family_history::Vector{String} = String[]
 end
 
 """
@@ -56,8 +55,7 @@ struct DifferentialDiagnosis
     warning::String
 end
 
-const NOT_FOR_CLINICAL_USE =
-    "NOT FOR CLINICAL USE. Research output only — do not act on this for any patient."
+const NOT_FOR_CLINICAL_USE = "NOT FOR CLINICAL USE. Research output only — do not act on this for any patient."
 
 """
     rank_diagnoses(case, g; disease_annotations, topk=20) -> DifferentialDiagnosis
@@ -70,10 +68,7 @@ patient's phenotypes and each disease's annotated phenotype set.
 * `disease_annotations` is `disease_id => (name, phenotype_ids)`.
 """
 function rank_diagnoses(
-    case::PatientCase,
-    g::OntologyGraph;
-    disease_annotations::AbstractDict,
-    topk::Int=20,
+    case::PatientCase, g::OntologyGraph; disease_annotations::AbstractDict, topk::Int=20
 )
     query = [string(p) for p in case.phenotypes_present]
     excluded = Set(string(p) for p in case.phenotypes_absent)
@@ -84,17 +79,23 @@ function rank_diagnoses(
         phs_kept = [p for p in phs if !(string(p) in excluded)]
         isempty(phs_kept) && continue
 
-        pscore = isempty(query) ? 0.0 :
-            phenotype_similarity(g, query, phs_kept; method=:resnik)
+        pscore =
+            isempty(query) ? 0.0 : phenotype_similarity(g, query, phs_kept; method=:resnik)
 
         # Variant scoring is a no-op until Phase 4 supplies real evidence.
         vscore = 0.0
 
-        push!(cands, DifferentialCandidate(
-            String(did), name,
-            pscore + vscore, pscore, vscore,
-            ["phenotype Resnik vs $(length(phs_kept)) annotations"],
-        ))
+        push!(
+            cands,
+            DifferentialCandidate(
+                String(did),
+                name,
+                pscore + vscore,
+                pscore,
+                vscore,
+                ["phenotype Resnik vs $(length(phs_kept)) annotations"],
+            ),
+        )
     end
 
     sort!(cands; by=c -> c.score, rev=true)

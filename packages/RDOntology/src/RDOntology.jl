@@ -14,14 +14,21 @@ using RareDiseaseCore
 
 include("obo.jl")
 
-export
-    OntologyTerm, OntologyGraph,
-    load_obo, load_hpo, load_mondo, load_orphanet,
-    add_term!, add_edge!,
-    ancestors, descendants, is_a,
+export OntologyTerm,
+    OntologyGraph,
+    load_obo,
+    load_hpo,
+    load_mondo,
+    load_orphanet,
+    add_term!,
+    add_edge!,
+    ancestors,
+    descendants,
+    is_a,
     resolve_xref,
     most_informative_common_ancestor,
-    information_content!, term_ic,
+    information_content!,
+    term_ic,
     phenotype_similarity
 
 # ---------------------------------------------------------------------------
@@ -54,21 +61,23 @@ In-memory typed DAG. Edges are directed child -> parent (`is_a`).
 * `ic`            — populated by `information_content!`
 """
 mutable struct OntologyGraph
-    terms::Dict{String,OntologyTerm}
-    parents::Dict{String,Vector{String}}
-    children::Dict{String,Vector{String}}
-    xref_index::Dict{String,String}
-    annotations::Dict{String,Set{String}}
-    ic::Dict{String,Float64}
+    terms::Dict{String, OntologyTerm}
+    parents::Dict{String, Vector{String}}
+    children::Dict{String, Vector{String}}
+    xref_index::Dict{String, String}
+    annotations::Dict{String, Set{String}}
+    ic::Dict{String, Float64}
 end
-OntologyGraph() = OntologyGraph(
-    Dict{String,OntologyTerm}(),
-    Dict{String,Vector{String}}(),
-    Dict{String,Vector{String}}(),
-    Dict{String,String}(),
-    Dict{String,Set{String}}(),
-    Dict{String,Float64}(),
-)
+function OntologyGraph()
+    return OntologyGraph(
+        Dict{String, OntologyTerm}(),
+        Dict{String, Vector{String}}(),
+        Dict{String, Vector{String}}(),
+        Dict{String, String}(),
+        Dict{String, Set{String}}(),
+        Dict{String, Float64}(),
+    )
+end
 
 Base.length(g::OntologyGraph) = length(g.terms)
 Base.haskey(g::OntologyGraph, id::AbstractString) = haskey(g.terms, id)
@@ -95,7 +104,7 @@ end
 Add a directed `is_a` edge `child -> parent`. Both terms must exist.
 """
 function add_edge!(g::OntologyGraph, child::AbstractString, parent::AbstractString)
-    haskey(g.terms, child)  || throw(KeyError(child))
+    haskey(g.terms, child) || throw(KeyError(child))
     haskey(g.terms, parent) || throw(KeyError(parent))
     push!(g.parents[child], String(parent))
     push!(g.children[parent], String(child))
@@ -131,8 +140,9 @@ function load_obo(path::AbstractString; namespace::Symbol)
                 push!(xrefs, _first_token(x))
             end
         end
-        obsolete = haskey(st.tags, "is_obsolete") &&
-                   lowercase(first(st.tags["is_obsolete"])) == "true"
+        obsolete =
+            haskey(st.tags, "is_obsolete") &&
+            lowercase(first(st.tags["is_obsolete"])) == "true"
         add_term!(g, OntologyTerm(id, name, namespace, synonyms, xrefs, obsolete))
     end
     # Pass 2: edges. We support `is_a` and `relationship: part_of` parents.
@@ -153,14 +163,14 @@ function load_obo(path::AbstractString; namespace::Symbol)
     return g
 end
 
-load_hpo(path::AbstractString)      = load_obo(path; namespace=:hpo)
-load_mondo(path::AbstractString)    = load_obo(path; namespace=:mondo)
+load_hpo(path::AbstractString) = load_obo(path; namespace=:hpo)
+load_mondo(path::AbstractString) = load_obo(path; namespace=:mondo)
 load_orphanet(path::AbstractString) = load_obo(path; namespace=:orpha)
 
 # Helpers for OBO field cleanup.
 function _first_token(s::AbstractString)
     # "MONDO:0009861 ! Phenylketonuria" -> "MONDO:0009861"
-    String(strip(split(s, r"\s*!\s*"; limit=2)[1]))
+    return String(strip(split(s, r"\s*!\s*"; limit=2)[1]))
 end
 function _extract_quoted(s::AbstractString)
     # `"Seizures" EXACT [...]` -> `Seizures`. Fall back to raw if no quote.
@@ -249,8 +259,7 @@ its descendants. `annotations` is `disease_id => Iterable{phenotype_id}`.
 
 Must be called before `phenotype_similarity` or `term_ic`.
 """
-function information_content!(g::OntologyGraph;
-                              annotations::AbstractDict)
+function information_content!(g::OntologyGraph; annotations::AbstractDict)
     # Store raw annotations
     empty!(g.annotations)
     for (d, phs) in annotations
@@ -263,7 +272,7 @@ function information_content!(g::OntologyGraph;
     # For each term, count diseases whose annotation set intersects
     # {term} ∪ descendants(term). We compute counts by propagating up:
     # for every (disease, leaf), mark leaf and all its ancestors.
-    counts = Dict{String,Int}()
+    counts = Dict{String, Int}()
     for (_, phs) in g.annotations
         marked = Set{String}()
         for p in phs
@@ -311,8 +320,10 @@ function most_informative_common_ancestor(
     g::OntologyGraph, a::AbstractString, b::AbstractString
 )
     isempty(g.ic) && error("call information_content!(g; annotations=...) first")
-    A = ancestors(g, a); push!(A, String(a))
-    B = ancestors(g, b); push!(B, String(b))
+    A = ancestors(g, a);
+    push!(A, String(a))
+    B = ancestors(g, b);
+    push!(B, String(b))
     best_id = ""
     best_ic = -Inf
     for t in intersect(A, B)
@@ -338,11 +349,7 @@ for each `q ∈ query`, take the maximum pairwise similarity to any
   * `:lin`    — 2·IC(MICA) / (IC(q) + IC(r))
   * `:jc`     — 1 / (1 + IC(q) + IC(r) - 2·IC(MICA))
 """
-function phenotype_similarity(
-    g::OntologyGraph,
-    query, reference;
-    method::Symbol=:resnik,
-)
+function phenotype_similarity(g::OntologyGraph, query, reference; method::Symbol=:resnik)
     isempty(g.ic) && error("call information_content!(g; annotations=...) first")
     q = collect(String(x) for x in query)
     r = collect(String(x) for x in reference)

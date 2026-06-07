@@ -40,18 +40,14 @@ jobs:
         run: |
           julia --project=. -e '
             using Pkg
-            for p in readdir("packages"; join=false)
-              Pkg.develop(PackageSpec(path=joinpath("packages", p)))
-            end
+            pkgs = [PackageSpec(path=joinpath("packages", p)) for p in readdir("packages"; join=false)]
+            Pkg.develop(pkgs)
             Pkg.instantiate()
           '
           julia --project=packages/${{ matrix.package }} -e '
             using Pkg
-            for p in readdir("packages"; join=false)
-              if p != "${{ matrix.package }}"
-                Pkg.develop(PackageSpec(path=joinpath("packages", p)))
-              end
-            end
+            pkgs = [PackageSpec(path=joinpath("packages", p)) for p in readdir("packages"; join=false) if p != "${{ matrix.package }}"]
+            Pkg.develop(pkgs)
             Pkg.instantiate()
             Pkg.test()
           '
@@ -69,9 +65,8 @@ jobs:
         run: |
           julia --project=. -e '
             using Pkg
-            for p in readdir("packages"; join=false)
-              Pkg.develop(PackageSpec(path=joinpath("packages", p)))
-            end
+            pkgs = [PackageSpec(path=joinpath("packages", p)) for p in readdir("packages"; join=false)]
+            Pkg.develop(pkgs)
             Pkg.instantiate()
             include("test/runtests.jl")
           '

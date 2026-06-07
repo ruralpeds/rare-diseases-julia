@@ -10,9 +10,9 @@
 
 struct OBOStanza
     kind::String                          # "Term" | "Typedef" | "Header"
-    tags::Dict{String,Vector{String}}
+    tags::Dict{String, Vector{String}}
 end
-OBOStanza(kind) = OBOStanza(kind, Dict{String,Vector{String}}())
+OBOStanza(kind) = OBOStanza(kind, Dict{String, Vector{String}}())
 
 """
     parse_obo(path) -> Vector{OBOStanza}
@@ -34,7 +34,7 @@ function parse_obo(path::AbstractString)
             startswith(line, "!") && continue   # comment line
 
             if startswith(line, "[") && endswith(line, "]")
-                kind = String(line[2:end-1])
+                kind = String(line[2:(end - 1)])
                 current = OBOStanza(kind)
                 push!(out, current)
                 continue

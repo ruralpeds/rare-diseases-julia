@@ -28,9 +28,9 @@ const PAH_PKU = @reaction_network PAH_PKU begin
     @parameters intake_phe kcat E_total residual_activity bh4_factor Km k_clear_Tyr
     @species Phe(t) Tyr(t)
 
-    intake_phe,                                            ∅   --> Phe
+    intake_phe, ∅ --> Phe
     mm(Phe, kcat * E_total * residual_activity * bh4_factor, Km), Phe --> Tyr
-    k_clear_Tyr,                                            Tyr --> ∅
+    k_clear_Tyr, Tyr --> ∅
 end
 
 """
@@ -49,13 +49,13 @@ function default_pah_parameters(;
     k_clear_Tyr::Float64=0.3,
 )
     return [
-        :intake_phe        => intake_phe,
-        :kcat              => kcat,
-        :E_total           => E_total,
+        :intake_phe => intake_phe,
+        :kcat => kcat,
+        :E_total => E_total,
         :residual_activity => residual_activity,
-        :bh4_factor        => bh4_factor,
-        :Km                => Km,
-        :k_clear_Tyr       => k_clear_Tyr,
+        :bh4_factor => bh4_factor,
+        :Km => Km,
+        :k_clear_Tyr => k_clear_Tyr,
     ]
 end
 
@@ -75,12 +75,12 @@ collapsed to a single residual-activity multiplier.
 | `:wildtype`          | 1.0               |
 """
 function pah_residual_activity(class::Symbol)
-    class === :null          && return 0.0
+    class === :null && return 0.0
     class === :classical_pku && return 0.02
-    class === :moderate_pku  && return 0.10
-    class === :mild_pku      && return 0.25
-    class === :mild_hpa      && return 0.50
-    class === :wildtype      && return 1.0
+    class === :moderate_pku && return 0.10
+    class === :mild_pku && return 0.25
+    class === :mild_hpa && return 0.50
+    class === :wildtype && return 1.0
     throw(ArgumentError("unknown PAH variant class: $class"))
 end
 
@@ -91,16 +91,15 @@ Return a parameter vector with `residual_activity` set from `class` and
 `bh4_factor` set as supplied.
 """
 function variant_effect(
-    params::AbstractVector{<:Pair{Symbol,Float64}},
-    class::Symbol;
-    bh4_factor::Float64=1.0,
+    params::AbstractVector{<:Pair{Symbol, Float64}}, class::Symbol; bh4_factor::Float64=1.0
 )
     d = Dict(params)
     d[:residual_activity] = pah_residual_activity(class)
     d[:bh4_factor] = bh4_factor
-    return [k => d[k] for k in (:intake_phe, :kcat, :E_total,
-                                 :residual_activity, :bh4_factor,
-                                 :Km, :k_clear_Tyr)]
+    return [
+        k => d[k] for k in
+        (:intake_phe, :kcat, :E_total, :residual_activity, :bh4_factor, :Km, :k_clear_Tyr)
+    ]
 end
 
 """
@@ -120,7 +119,7 @@ function pah_pku_problem(;
     variant::Symbol=:wildtype,
     bh4::Float64=1.0,
     u0=[:Phe => 0.1, :Tyr => 0.1],
-    tspan::Tuple{<:Real,<:Real}=(0.0, 48.0),
+    tspan::Tuple{<:Real, <:Real}=(0.0, 48.0),
     kwargs...,
 )
     p = variant_effect(default_pah_parameters(; kwargs...), variant; bh4_factor=bh4)

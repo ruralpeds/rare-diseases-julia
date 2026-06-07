@@ -35,7 +35,7 @@ const HBS_SCD = @reaction_network HBS_SCD begin
     @species Mono(t) Poly(t)
 
     k_form * (deoxyHbS * (1 - hbf_inhibition * hbf_fraction))^n, Mono --> Poly
-    k_diss,                                                        Poly --> Mono
+    k_diss, Poly --> Mono
 end
 
 """
@@ -65,14 +65,14 @@ function hbs_scd_problem(;
     k_diss::Float64=0.5,
     n::Float64=4.0,
     u0=[:Mono => 1.0, :Poly => 0.0],
-    tspan::Tuple{<:Real,<:Real}=(0.0, 5.0),
+    tspan::Tuple{<:Real, <:Real}=(0.0, 5.0),
 )
     p = [
-        :k_form         => k_form,
-        :k_diss         => k_diss,
-        :deoxyHbS       => deoxyHbS,
-        :n              => n,
-        :hbf_fraction   => hbf_fraction,
+        :k_form => k_form,
+        :k_diss => k_diss,
+        :deoxyHbS => deoxyHbS,
+        :n => n,
+        :hbf_fraction => hbf_fraction,
         :hbf_inhibition => hbf_inhibition,
     ]
     return ODEProblem(HBS_SCD, u0, tspan, p)

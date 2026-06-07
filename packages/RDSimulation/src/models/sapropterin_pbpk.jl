@@ -36,7 +36,7 @@ const SAPROPTERIN_PBPK = @reaction_network SAPROPTERIN_PBPK begin
     @parameters ka kel
     @species A_gut(t) A_central(t)
 
-    ka,  A_gut     --> A_central
+    ka, A_gut --> A_central
     kel, A_central --> ∅
 end
 
@@ -51,7 +51,7 @@ function sapropterin_pbpk_problem(;
     dose_mg::Float64=10.0,
     ka::Float64=1.2,
     kel::Float64=0.115,
-    tspan::Tuple{<:Real,<:Real}=(0.0, 24.0),
+    tspan::Tuple{<:Real, <:Real}=(0.0, 24.0),
 )
     u0 = [:A_gut => dose_mg, :A_central => 0.0]
     p = [:ka => ka, :kel => kel]

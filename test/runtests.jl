@@ -9,6 +9,7 @@ const PACKAGES = [
     "RDOntology",
     "RDGenomics",
     "RDProteomics",
+    "RDImmunology",
     "RDPathways",
     "RDPharmacology",
     "RDClinical",
@@ -19,7 +20,6 @@ const PACKAGES = [
 ]
 
 @testset "Cross-package integration" begin
-
     @testset "Co-loading all packages" begin
         for p in PACKAGES
             @info "Loading $p"
@@ -38,16 +38,15 @@ const PACKAGES = [
 
         # 1. Load mini HPO and compute information content from a tiny
         #    annotation corpus.
-        fixture = joinpath(@__DIR__, "..", "packages", "RDOntology",
-                           "test", "fixtures", "mini_hpo.obo")
+        fixture = joinpath(
+            @__DIR__, "..", "packages", "RDOntology", "test", "fixtures", "mini_hpo.obo"
+        )
         g = load_hpo(fixture)
         annotations = Dict(
-            "DISEASE:SEIZ" => ("Seizure-only disease",   ["HP:0001250"]),
-            "DISEASE:VIS"  => ("Vision-only disease",    ["HP:0000505"]),
+            "DISEASE:SEIZ" => ("Seizure-only disease", ["HP:0001250"]),
+            "DISEASE:VIS" => ("Vision-only disease", ["HP:0000505"]),
         )
-        information_content!(g; annotations=Dict(
-            d => phs for (d, (_, phs)) in annotations
-        ))
+        information_content!(g; annotations=Dict(d => phs for (d, (_, phs)) in annotations))
 
         # 2. Rank diagnoses for a seizure patient.
         case = PatientCase(phenotypes_present=[HPOId("HP:0001250")])
@@ -68,26 +67,22 @@ const PACKAGES = [
         add_edge_undirected!(net, "HMGCR", "LDLR")
 
         drugs = [
-            DrugRecord(name="lamotrigine",
-                       targets=["SCN1A"],
-                       evidence_tier=APPROVED),
-            DrugRecord(name="atorvastatin",
-                       targets=["HMGCR"],
-                       evidence_tier=APPROVED),
-            DrugRecord(name="some_repurposing",
-                       targets=["GABA_R"],
-                       evidence_tier=REPURPOSING_HYPOTHESIS),
+            DrugRecord(name="lamotrigine", targets=["SCN1A"], evidence_tier=APPROVED),
+            DrugRecord(name="atorvastatin", targets=["HMGCR"], evidence_tier=APPROVED),
+            DrugRecord(
+                name="some_repurposing",
+                targets=["GABA_R"],
+                evidence_tier=REPURPOSING_HYPOTHESIS,
+            ),
         ]
         cands, warning = rank_treatments(
-            ["SCN1A"], drugs, net;
-            n_bootstrap=30, rng=Xoshiro(0),
+            ["SCN1A"], drugs, net; n_bootstrap=30, rng=Xoshiro(0)
         )
         @test occursin("NOT FOR CLINICAL USE", warning)
         @test !isempty(cands)
         # The on-target approved drug must rank above the off-target
         # approved drug (same tier bonus, better proximity).
         names = [c.drug.name for c in cands]
-        @test findfirst(==("lamotrigine"), names) <
-              findfirst(==("atorvastatin"), names)
+        @test findfirst(==("lamotrigine"), names) < findfirst(==("atorvastatin"), names)
     end
 end

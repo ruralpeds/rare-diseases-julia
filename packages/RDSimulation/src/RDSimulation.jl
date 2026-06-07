@@ -38,24 +38,37 @@ include("cohort.jl")
 
 export
     # Reproducibility
-    RunManifest, SimulationResult,
+    RunManifest,
+    SimulationResult,
     # Immunology
-    IMMUNOLOGY_BASE, default_immunology_parameters, immunology_base_problem,
-    ImmuneCellAgent, build_tissue_abm,
+    IMMUNOLOGY_BASE,
+    default_immunology_parameters,
+    immunology_base_problem,
+    ImmuneCellAgent,
+    build_tissue_abm,
     # PKU model + helpers
-    PAH_PKU, default_pah_parameters,
-    pah_residual_activity, variant_effect,
+    PAH_PKU,
+    default_pah_parameters,
+    pah_residual_activity,
+    variant_effect,
     pah_pku_problem,
     # Sapropterin PBPK
-    SAPROPTERIN_PBPK, sapropterin_pbpk_problem,
+    SAPROPTERIN_PBPK,
+    sapropterin_pbpk_problem,
     # CFTR / CF
-    CFTR_CF, cftr_class_factor, cftr_modulator_factor, cftr_cf_problem,
+    CFTR_CF,
+    cftr_class_factor,
+    cftr_modulator_factor,
+    cftr_cf_problem,
     # HbS / sickle cell
-    HBS_SCD, hbs_scd_problem,
+    HBS_SCD,
+    hbs_scd_problem,
     # BioModels
     load_biomodel,
     # Cohort
-    Patient, build_cohort_model, run_cohort!
+    Patient,
+    build_cohort_model,
+    run_cohort!
 
 """
     RunManifest
@@ -66,13 +79,13 @@ else goes in `extra`.
 """
 Base.@kwdef struct RunManifest
     code_git_sha::String
-    data_hashes::Dict{String,String}
+    data_hashes::Dict{String, String}
     rng_seed::UInt64
     solver::String
     abstol::Float64
     reltol::Float64
     created_at::DateTime = now()
-    extra::Dict{String,Any} = Dict{String,Any}()
+    extra::Dict{String, Any} = Dict{String, Any}()
 end
 
 """

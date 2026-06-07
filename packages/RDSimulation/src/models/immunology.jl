@@ -34,7 +34,7 @@ function default_immunology_parameters()
         :k_mc => 0.05,  # Macrophage activation by cytokine
         :k_cp => 0.3,   # Pathogen clearance rate
         :d_m => 0.1,    # Macrophage deactivation rate
-        :d_c => 0.5     # Cytokine decay rate
+        :d_c => 0.5,     # Cytokine decay rate
     )
 end
 
@@ -77,12 +77,12 @@ Construct an `Agents.StandardABM` representing a 2D tissue microenvironment
 populated with different immune cell types, satisfying the immunology ecosystem requirements.
 """
 function build_tissue_abm(;
-    grid_size::Tuple{Int,Int}=(20, 20),
+    grid_size::Tuple{Int, Int}=(20, 20),
     n_macrophages::Int=50,
     n_t_cells::Int=50,
     agent_step!::Function,
     model_step!::Function=dummystep,
-    rng::AbstractRNG=Random.default_rng()
+    rng::AbstractRNG=Random.default_rng(),
 )
     space = GridSpaceSingle(grid_size; periodic=false)
     properties = Dict(:cytokine_level => zeros(Float64, grid_size...))

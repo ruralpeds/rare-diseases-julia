@@ -22,10 +22,8 @@ using BioStructures
 using FASTX
 using RareDiseaseCore
 
-export
-    ResidueFeature,
-    load_uniprot, fetch_alphafold, read_structure,
-    map_variant_to_residue, residue_features
+export ResidueFeature,
+    load_uniprot, fetch_alphafold, read_structure, map_variant_to_residue, residue_features
 
 """
     ResidueFeature
@@ -35,10 +33,10 @@ Per-residue feature row keyed by `(accession, position)`.
 struct ResidueFeature
     accession::UniProtAcc
     position::Int
-    plddt::Union{Nothing,Float64}
-    secondary::Union{Nothing,Symbol}    # :helix | :sheet | :loop
+    plddt::Union{Nothing, Float64}
+    secondary::Union{Nothing, Symbol}    # :helix | :sheet | :loop
     domains::Vector{String}
-    distance_to_active_site::Union{Nothing,Float64}
+    distance_to_active_site::Union{Nothing, Float64}
 end
 
 """
@@ -47,12 +45,17 @@ end
 Thin pass-through to `BioStructures.read`. Use this entry point so callers
 don't need to import BioStructures explicitly.
 """
-read_structure(path::AbstractString; format=PDBFormat) =
-    BioStructures.read(path, format)
+read_structure(path::AbstractString; format=PDBFormat) = BioStructures.read(path, format)
 
-load_uniprot(::AbstractString)             = error("load_uniprot not yet implemented (Phase 5)")
-fetch_alphafold(::UniProtAcc; kw...)       = error("fetch_alphafold not yet implemented (Phase 5)")
-map_variant_to_residue(::Variant)          = error("map_variant_to_residue not yet implemented (Phase 5)")
-residue_features(::UniProtAcc, ::Int)      = error("residue_features not yet implemented (Phase 5)")
+load_uniprot(::AbstractString) = error("load_uniprot not yet implemented (Phase 5)")
+function fetch_alphafold(::UniProtAcc; kw...)
+    return error("fetch_alphafold not yet implemented (Phase 5)")
+end
+function map_variant_to_residue(::Variant)
+    return error("map_variant_to_residue not yet implemented (Phase 5)")
+end
+function residue_features(::UniProtAcc, ::Int)
+    return error("residue_features not yet implemented (Phase 5)")
+end
 
 end # module

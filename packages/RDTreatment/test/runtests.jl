@@ -5,14 +5,15 @@ using RDPathways
 using RDTreatment
 
 @testset "RDTreatment" begin
-
     @testset "TreatmentCandidate basic construction" begin
-        d = DrugRecord(name="sapropterin",
-                       chembl=ChemblId("CHEMBL1201824"),
-                       rxcui=RxCui("714583"),
-                       targets=["PAH"],
-                       evidence_tier=APPROVED,
-                       citations=["PMID:18762447"])
+        d = DrugRecord(
+            name="sapropterin",
+            chembl=ChemblId("CHEMBL1201824"),
+            rxcui=RxCui("714583"),
+            targets=["PAH"],
+            evidence_tier=APPROVED,
+            citations=["PMID:18762447"],
+        )
         @test d.name == "sapropterin"
         @test d.evidence_tier == APPROVED
     end
@@ -31,18 +32,20 @@ using RDTreatment
         add_edge_undirected!(n, "TH", "FAR1")
 
         disease = ["PAH"]
-        on_target = DrugRecord(name="on",
-                               targets=["TYR_PATH"],
-                               evidence_tier=REPURPOSING_HYPOTHESIS)
-        off_target = DrugRecord(name="off",
-                                targets=["OFF"],
-                                evidence_tier=REPURPOSING_HYPOTHESIS)
-        approved_far = DrugRecord(name="approved-but-far",
-                                  targets=["OFF"],
-                                  evidence_tier=APPROVED)
+        on_target = DrugRecord(
+            name="on", targets=["TYR_PATH"], evidence_tier=REPURPOSING_HYPOTHESIS
+        )
+        off_target = DrugRecord(
+            name="off", targets=["OFF"], evidence_tier=REPURPOSING_HYPOTHESIS
+        )
+        approved_far = DrugRecord(
+            name="approved-but-far", targets=["OFF"], evidence_tier=APPROVED
+        )
 
         cands, warning = rank_treatments(
-            disease, [on_target, off_target, approved_far], n;
+            disease,
+            [on_target, off_target, approved_far],
+            n;
             n_bootstrap=30,
             rng=Xoshiro(0),
         )
@@ -56,11 +59,10 @@ using RDTreatment
         # even though its target is far from disease.
         @test names[1] == "approved-but-far"
         # On-target unapproved should outrank off-target unapproved.
-        @test findfirst(==("on"),  names) <
-              findfirst(==("off"), names)
+        @test findfirst(==("on"), names) < findfirst(==("off"), names)
 
         # Proximity distance must reflect on-target advantage
-        on_cand  = cands[findfirst(c -> c.drug.name == "on",  cands)]
+        on_cand = cands[findfirst(c -> c.drug.name == "on", cands)]
         off_cand = cands[findfirst(c -> c.drug.name == "off", cands)]
         @test on_cand.proximity_d < off_cand.proximity_d
     end

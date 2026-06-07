@@ -3,7 +3,6 @@ using Random
 using RDPathways
 
 @testset "RDPathways" begin
-
     @testset "Empty network" begin
         n = PathwayNetwork()
         @test length(n) == 0
@@ -55,22 +54,22 @@ using RDPathways
 
     @testset "Neighborhood radius" begin
         n = PathwayNetwork()
-        for (a, b) in [("A","B"),("B","C"),("C","D"),("D","E")]
+        for (a, b) in [("A", "B"), ("B", "C"), ("C", "D"), ("D", "E")]
             add_edge_undirected!(n, a, b)
         end
         @test neighborhood(n, "A"; radius=1) == Set(["B"])
-        @test neighborhood(n, "A"; radius=2) == Set(["B","C"])
-        @test neighborhood(n, "A"; radius=4) == Set(["B","C","D","E"])
+        @test neighborhood(n, "A"; radius=2) == Set(["B", "C"])
+        @test neighborhood(n, "A"; radius=4) == Set(["B", "C", "D", "E"])
     end
 
     @testset "Guney 2016 closest_distance" begin
         n = PathwayNetwork()
-        for (a, b) in [("S1","X"),("X","T1"),("X","Y"),("Y","T2"),("S2","Y")]
+        for (a, b) in [("S1", "X"), ("X", "T1"), ("X", "Y"), ("Y", "T2"), ("S2", "Y")]
             add_edge_undirected!(n, a, b)
         end
         # S1 -> T1 length 2, S1 -> T2 length 3 -> min 2
         # S2 -> T2 length 1, S2 -> T1 length 3 -> min 1
-        d = closest_distance(n, ["S1","S2"], ["T1","T2"])
+        d = closest_distance(n, ["S1", "S2"], ["T1", "T2"])
         @test d == (2 + 1) / 2
 
         # Empty source or target -> Inf
@@ -84,7 +83,7 @@ using RDPathways
 
     @testset "network_proximity_z" begin
         n = PathwayNetwork()
-        for (a, b) in [("S","X"),("X","T")]
+        for (a, b) in [("S", "X"), ("X", "T")]
             add_edge_undirected!(n, a, b)
         end
         # Add filler nodes so the bootstrap has options
