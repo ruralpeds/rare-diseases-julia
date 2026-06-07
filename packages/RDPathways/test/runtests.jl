@@ -29,8 +29,8 @@ using RDPathways
         add_edge_directed!(n, "B", "C"; weight=0.5, sign=-1)
         @test has_edge(n, "A", "B")
         @test !has_edge(n, "B", "A")
-        @test n.signs[("A", "B")] == +1
-        @test n.signs[("B", "C")] == -1
+        @test n.g["A", "B"].sign == +1
+        @test n.g["B", "C"].sign == -1
     end
 
     @testset "Shortest path on a small grid" begin

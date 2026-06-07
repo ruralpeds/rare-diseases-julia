@@ -199,7 +199,10 @@ end
 # Pathways & domains
 struct ReactomeId <: AbstractId
     value::String
-    ReactomeId(s::AbstractString) = new(_validate_prefixed(s, "R-", 1))
+    function ReactomeId(s::AbstractString)
+        startswith(s, "R-") || throw(ArgumentError("Reactome ID must start with R-"))
+        return new(String(s))
+    end
 end
 struct PfamId <: AbstractId
     value::String
