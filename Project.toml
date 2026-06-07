@@ -1,12 +1,22 @@
 name = "RareDiseasesJulia"
 uuid = "00000000-0000-4000-8000-000000000001"
-authors = ["rare-diseases-julia contributors"]
 version = "0.0.1"
-
-# Meta-environment for development across all packages in packages/.
-# Each subpackage carries its own Project.toml with real dependencies.
+authors = ["rare-diseases-julia contributors"]
 
 [deps]
+RDApp = "11111111-0000-4000-8000-000000000012"
+RDClinical = "11111111-0000-4000-8000-000000000008"
+RDDataSources = "11111111-0000-4000-8000-000000000002"
+RDDiagnostics = "11111111-0000-4000-8000-000000000009"
+RDGenomics = "11111111-0000-4000-8000-000000000004"
+RDImmunology = "11111111-0000-4000-8000-000000000013"
+RDOntology = "11111111-0000-4000-8000-000000000003"
+RDPathways = "11111111-0000-4000-8000-000000000006"
+RDPharmacology = "11111111-0000-4000-8000-000000000007"
+RDProteomics = "11111111-0000-4000-8000-000000000005"
+RDSimulation = "11111111-0000-4000-8000-000000000010"
+RDTreatment = "11111111-0000-4000-8000-000000000011"
+RareDiseaseCore = "11111111-0000-4000-8000-000000000001"
 
 [compat]
 julia = "1.10"

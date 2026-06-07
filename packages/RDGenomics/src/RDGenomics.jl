@@ -25,12 +25,18 @@ using RareDiseaseCore
 
 include("hgvs.jl")
 
-export
-    GenomeAssembly, GRCh37, GRCh38,
-    HgvsCoding, HgvsProtein,
-    parse_hgvs_c, parse_hgvs_p,
-    annotate_variant, lookup_clinvar, lookup_gnomad_af,
-    acmg_classify, AcmgEvidence
+export GenomeAssembly,
+    GRCh37,
+    GRCh38,
+    HgvsCoding,
+    HgvsProtein,
+    parse_hgvs_c,
+    parse_hgvs_p,
+    annotate_variant,
+    lookup_clinvar,
+    lookup_gnomad_af,
+    acmg_classify,
+    AcmgEvidence
 
 @enum GenomeAssembly GRCh37 GRCh38
 
@@ -43,9 +49,9 @@ Evidence codes per Richards et al. 2015 (ACMG/AMP). Codes are stored as
 """
 struct AcmgEvidence
     codes::Vector{Symbol}
-    rationales::Dict{Symbol,String}
+    rationales::Dict{Symbol, String}
 end
-AcmgEvidence() = AcmgEvidence(Symbol[], Dict{Symbol,String}())
+AcmgEvidence() = AcmgEvidence(Symbol[], Dict{Symbol, String}())
 
 function Base.push!(e::AcmgEvidence, code::Symbol, rationale::AbstractString="")
     code in e.codes || push!(e.codes, code)
@@ -53,9 +59,9 @@ function Base.push!(e::AcmgEvidence, code::Symbol, rationale::AbstractString="")
     return e
 end
 
-annotate_variant(::Variant)                  = error("annotate_variant not yet implemented (Phase 4)")
-lookup_clinvar(::Variant)                    = error("lookup_clinvar not yet implemented (Phase 4)")
-lookup_gnomad_af(::Variant)                  = error("lookup_gnomad_af not yet implemented (Phase 4)")
+annotate_variant(::Variant) = error("annotate_variant not yet implemented (Phase 4)")
+lookup_clinvar(::Variant) = error("lookup_clinvar not yet implemented (Phase 4)")
+lookup_gnomad_af(::Variant) = error("lookup_gnomad_af not yet implemented (Phase 4)")
 
 """
     acmg_classify(evidence::AcmgEvidence) ->
@@ -74,9 +80,15 @@ function acmg_classify(e::AcmgEvidence)
 
     # Pathogenic rules (any one is sufficient)
     pathogenic =
-        (has(:PVS1) && (n("PS") ≥ 1 || n("PM") ≥ 2 || (n("PM") ≥ 1 && n("PP") ≥ 1) || n("PP") ≥ 2)) ||
+        (
+            has(:PVS1) &&
+            (n("PS") ≥ 1 || n("PM") ≥ 2 || (n("PM") ≥ 1 && n("PP") ≥ 1) || n("PP") ≥ 2)
+        ) ||
         (n("PS") ≥ 2) ||
-        (n("PS") ≥ 1 && (n("PM") ≥ 3 || (n("PM") ≥ 2 && n("PP") ≥ 2) || (n("PM") ≥ 1 && n("PP") ≥ 4)))
+        (
+            n("PS") ≥ 1 &&
+            (n("PM") ≥ 3 || (n("PM") ≥ 2 && n("PP") ≥ 2) || (n("PM") ≥ 1 && n("PP") ≥ 4))
+        )
 
     likely_pathogenic =
         (has(:PVS1) && n("PM") ≥ 1) ||
@@ -89,10 +101,10 @@ function acmg_classify(e::AcmgEvidence)
     benign = has(:BA1) || n("BS") ≥ 2
     likely_benign = (n("BS") ≥ 1 && n("BP") ≥ 1) || n("BP") ≥ 2
 
-    pathogenic        && return :pathogenic
+    pathogenic && return :pathogenic
     likely_pathogenic && return :likely_pathogenic
-    benign            && return :benign
-    likely_benign     && return :likely_benign
+    benign && return :benign
+    likely_benign && return :likely_benign
     return :uncertain
 end
 

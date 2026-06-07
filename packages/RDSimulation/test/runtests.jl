@@ -6,7 +6,6 @@ using Agents
 using RDSimulation
 
 @testset "RDSimulation" begin
-
     @testset "PAH residual activity table" begin
         @test pah_residual_activity(:wildtype) == 1.0
         @test pah_residual_activity(:null) == 0.0
@@ -22,48 +21,51 @@ using RDSimulation
             return sol.u[end][1]
         end
 
-        wt    = steady_phe(:wildtype)
-        mild  = steady_phe(:mild_pku)
+        wt = steady_phe(:wildtype)
+        mild = steady_phe(:mild_pku)
         class = steady_phe(:classical_pku)
-        nul   = steady_phe(:null)
+        nul = steady_phe(:null)
 
         @test wt < mild < class < nul
 
         # Sapropterin (bh4=2.0) lowers steady-state Phe in residual-activity
         # variants, but not in null (no enzyme to potentiate).
-        @test steady_phe(:mild_pku; bh4=2.0)      < steady_phe(:mild_pku)
+        @test steady_phe(:mild_pku; bh4=2.0) < steady_phe(:mild_pku)
         @test steady_phe(:classical_pku; bh4=2.0) < steady_phe(:classical_pku)
-        @test steady_phe(:null; bh4=2.0)          ≈ steady_phe(:null) atol=1e-9
+        @test steady_phe(:null; bh4=2.0) ≈ steady_phe(:null) atol=1e-9
     end
 
     @testset "CFTR class factors and modulator multipliers" begin
         @test cftr_class_factor(:wildtype) == 1.0
         @test cftr_class_factor(:I) == 0.0
-        @test cftr_class_factor(:II) < cftr_class_factor(:III) <
-              cftr_class_factor(:IV) < cftr_class_factor(:wildtype)
+        @test cftr_class_factor(:II) <
+            cftr_class_factor(:III) <
+            cftr_class_factor(:IV) <
+            cftr_class_factor(:wildtype)
         @test_throws ArgumentError cftr_class_factor(:bogus)
 
         # Ivacaftor potentiates class III but not class I
         @test cftr_modulator_factor(; class=:III, ivacaftor=true) > 1.0
-        @test cftr_modulator_factor(; class=:I,   ivacaftor=true) == 1.0
+        @test cftr_modulator_factor(; class=:I, ivacaftor=true) == 1.0
         # Trikafta on class II compounds three modulators
-        triple = cftr_modulator_factor(; class=:II,
-            tezacaftor=true, elexacaftor=true, ivacaftor=true)
+        triple = cftr_modulator_factor(;
+            class=:II, tezacaftor=true, elexacaftor=true, ivacaftor=true
+        )
         only_tez = cftr_modulator_factor(; class=:II, tezacaftor=true)
         @test triple > only_tez > 1.0
     end
 
     @testset "CFTR/CF ASL model — modulators raise steady-state ASL" begin
         function steady_asl(class; mods=(;))
-            prob = cftr_cf_problem(; class=class, modulators=mods,
-                                    tspan=(0.0, 48.0))
+            prob = cftr_cf_problem(; class=class, modulators=mods, tspan=(0.0, 48.0))
             sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
             return sol.u[end][1]
         end
         # F508del/F508del (class II) on Trikafta beats untreated
         untreated = steady_asl(:II)
-        trikafta  = steady_asl(:II;
-            mods=(; tezacaftor=true, elexacaftor=true, ivacaftor=true))
+        trikafta = steady_asl(
+            :II; mods=(; tezacaftor=true, elexacaftor=true, ivacaftor=true)
+        )
         @test trikafta > untreated
 
         # G551D (class III) responds to ivacaftor
@@ -76,11 +78,11 @@ using RDSimulation
     @testset "HbS / sickle cell — HbF dose-response on polymerization" begin
         function steady_poly(hbf)
             prob = hbs_scd_problem(; hbf_fraction=hbf, tspan=(0.0, 50.0))
-            sol  = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+            sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
             return sol.u[end][2]   # polymer fraction (species 2)
         end
-        baseline  = steady_poly(0.01)
-        on_hu     = steady_poly(0.15)
+        baseline = steady_poly(0.01)
+        on_hu = steady_poly(0.15)
         on_genetx = steady_poly(0.40)
         @test 0.0 ≤ on_genetx ≤ on_hu ≤ baseline ≤ 1.0
         @test baseline - on_hu > 0.05   # therapy makes a measurable dent
@@ -107,7 +109,8 @@ using RDSimulation
             data_hashes=Dict("BioModels" => "deadbeef"),
             rng_seed=UInt64(1),
             solver="Tsit5",
-            abstol=1e-8, reltol=1e-6,
+            abstol=1e-8,
+            reltol=1e-6,
         )
         @test rm.solver == "Tsit5"
         @test rm.rng_seed == 0x01
@@ -122,10 +125,7 @@ using RDSimulation
         end
 
         model = build_cohort_model(;
-            n_agents=50,
-            initial_state=:on_diet,
-            agent_step! = step!,
-            rng=Xoshiro(0),
+            n_agents=50, initial_state=:on_diet, (agent_step!)=step!, rng=Xoshiro(0)
         )
         run_cohort!(model, 100)
         agents = collect(allagents(model))

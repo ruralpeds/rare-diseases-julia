@@ -27,16 +27,16 @@ md"## 1. CFTR variant classes and modulator response"
 
 function steady_asl(class; mods=(;))
     prob = cftr_cf_problem(; class=class, modulators=mods, tspan=(0.0, 48.0))
-    sol  = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+    sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
     return sol.u[end][1]
 end
 
 untreated_table = [
-    :I        => steady_asl(:I),
-    :II       => steady_asl(:II),
-    :III      => steady_asl(:III),
-    :IV       => steady_asl(:IV),
-    :V        => steady_asl(:V),
+    :I => steady_asl(:I),
+    :II => steady_asl(:II),
+    :III => steady_asl(:III),
+    :IV => steady_asl(:IV),
+    :V => steady_asl(:V),
     :wildtype => steady_asl(:wildtype),
 ]
 
@@ -44,8 +44,7 @@ untreated_table = [
 md"## 2. Targeted therapies recover ASL volume by class"
 
 ivacaftor_g551d = steady_asl(:III; mods=(; ivacaftor=true))
-trikafta_f508   = steady_asl(:II;
-    mods=(; tezacaftor=true, elexacaftor=true, ivacaftor=true))
+trikafta_f508 = steady_asl(:II; mods=(; tezacaftor=true, elexacaftor=true, ivacaftor=true))
 class_i_modulators = steady_asl(:I; mods=(; ivacaftor=true))
 
 md"""

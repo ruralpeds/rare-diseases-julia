@@ -27,13 +27,13 @@ md"## 1. Baseline vs. hydroxyurea vs. gene therapy"
 
 function steady_polymer(hbf)
     prob = hbs_scd_problem(; hbf_fraction=hbf, tspan=(0.0, 50.0))
-    sol  = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+    sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
     return sol.u[end][2]
 end
 
-baseline   = steady_polymer(0.01)
+baseline = steady_polymer(0.01)
 hydroxyurea = steady_polymer(0.15)
-gene_tx    = steady_polymer(0.40)
+gene_tx = steady_polymer(0.40)
 
 md"""
 Steady-state polymer fraction:

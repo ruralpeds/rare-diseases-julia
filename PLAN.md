@@ -144,7 +144,7 @@ Versioning: every source download is stored under
 
 ## 3. Phase Roadmap
 
-Twelve phases. Each is roughly one to three weeks of focused work; the back
+Thirteen phases. Each is roughly one to three weeks of focused work; the back
 half can be parallelized across contributors.
 
 ### Phase 1 — Bootstrap (Week 1)
@@ -393,6 +393,13 @@ Exit: a tagged `v0.1.0` of each registered package, a deployed docs site,
 and a reproducible Docker image that loads the small fixture and runs all
 worked examples in under ten minutes.
 
+### Phase 13 — Computational Immunology Ecosystem
+- `RDImmunology.jl`: comprehensive base types for immune components (`AbstractImmuneCell`, `AbstractCytokine`, etc.).
+- `RDDataSources`: implementation of IEDB, ImmPort, and IMGT database downloaders and parsers.
+- `RDSimulation`:
+  - Base immunology ODE models (e.g. innate immune response, pathogen-macrophage-cytokine interactions).
+  - Base immunology ABM models for spatial tissue interactions.
+
 ---
 
 ## 4. Cross-Cutting Concerns
@@ -492,7 +499,8 @@ corresponding integration test.
 | M2: Knowledge graph | end of Phase 6 | disease → genes → proteins → pathways traversal works |
 | M3: Diagnosis | end of Phase 10 | differential ranking benchmark hits target |
 | M4: Simulation | end of Phase 11 | one disease end-to-end (mechanism → cohort → treatment) |
-| M5: v0.1.0 | end of Phase 12 | packages registered, docs deployed, Docker image published |
+| M5: Immunology | end of Phase 13 | baseline ODE/ABM models and IEDB/ImmPort parsers implemented |
+| M6: v0.1.0 | end of Phase 13 | packages registered, docs deployed, Docker image published |
 
 ---
 
@@ -591,6 +599,10 @@ Status as of the current commit. Phase numbering follows §3.
 | 12 | WebSocket streaming for long simulations | not started |
 | 12 | Documenter site + Docs.yml workflow | done |
 | 12 | Pluto notebooks for PKU + CF + SCD with runnable code | done |
+| 13 | `RDImmunology` package scaffold and abstract types | not started |
+| 13 | Comprehensive data source ingestion (IEDB, ImmPort, IMGT) | not started |
+| 13 | Base immunology ODE models (Cytokines, Macrophage, T-Cell) | not started |
+| 13 | Base immunology ABM models (Spatial tissue interactions) | not started |
 
 ## 10. Immediate Next Actions (First Two Weeks)
 

@@ -2,7 +2,6 @@ using Test
 using RDGenomics
 
 @testset "RDGenomics" begin
-
     @testset "GenomeAssembly enum" begin
         @test GRCh38 isa GenomeAssembly
         @test GRCh37 isa GenomeAssembly
@@ -92,7 +91,9 @@ using RDGenomics
         @test e.rationales[:PVS1] == "canonical splice"
 
         e2 = AcmgEvidence()
-        push!(e2, :PS1); push!(e2, :PM1); push!(e2, :PM2)
+        push!(e2, :PS1);
+        push!(e2, :PM1);
+        push!(e2, :PM2)
         @test acmg_classify(e2) == :likely_pathogenic
 
         e3 = AcmgEvidence()
@@ -100,7 +101,8 @@ using RDGenomics
         @test acmg_classify(e3) == :benign
 
         e4 = AcmgEvidence()
-        push!(e4, :BS1); push!(e4, :BP4)
+        push!(e4, :BS1);
+        push!(e4, :BP4)
         @test acmg_classify(e4) == :likely_benign
 
         e5 = AcmgEvidence()

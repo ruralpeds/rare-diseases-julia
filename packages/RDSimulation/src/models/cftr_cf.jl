@@ -39,8 +39,8 @@ const CFTR_CF = @reaction_network CFTR_CF begin
     @parameters secretion_base absorption_base cftr_activity
     @species ASL(t)
 
-    secretion_base * cftr_activity,     ∅   --> ASL
-    absorption_base,                    ASL --> ∅
+    secretion_base * cftr_activity, ∅ --> ASL
+    absorption_base, ASL --> ∅
 end
 
 """
@@ -59,12 +59,12 @@ Activity multiplier for a CFTR variant class. Throws on unknown class.
 | `:wildtype`     | 1.00   |
 """
 function cftr_class_factor(class::Symbol)
-    class === :I        && return 0.00
-    class === :II       && return 0.02
-    class === :III      && return 0.08
-    class === :IV       && return 0.20
-    class === :V        && return 0.30
-    class === :VI       && return 0.40
+    class === :I && return 0.00
+    class === :II && return 0.02
+    class === :III && return 0.08
+    class === :IV && return 0.20
+    class === :V && return 0.30
+    class === :VI && return 0.40
     class === :wildtype && return 1.00
     throw(ArgumentError("unknown CFTR variant class: $class"))
 end
@@ -83,19 +83,16 @@ Calibrated for qualitative behavior, not pharmacokinetic accuracy.
 * Trikafta = elexacaftor + tezacaftor + ivacaftor.
 """
 function cftr_modulator_factor(;
-    class::Symbol,
-    ivacaftor::Bool=false,
-    tezacaftor::Bool=false,
-    elexacaftor::Bool=false,
+    class::Symbol, ivacaftor::Bool=false, tezacaftor::Bool=false, elexacaftor::Bool=false
 )
     f = 1.0
     if ivacaftor && (class === :III || class === :IV)
         f *= 3.0
     end
     if class === :II
-        tezacaftor  && (f *= 2.0)
+        tezacaftor && (f *= 2.0)
         elexacaftor && (f *= 2.0)   # multiplicative on top of tezacaftor
-        ivacaftor   && (f *= 1.5)   # marginal gain after correction
+        ivacaftor && (f *= 1.5)   # marginal gain after correction
     end
     return f
 end
@@ -121,14 +118,14 @@ function cftr_cf_problem(;
     secretion_base::Float64=1.0,
     absorption_base::Float64=0.5,
     u0=[:ASL => 0.0],
-    tspan::Tuple{<:Real,<:Real}=(0.0, 24.0),
+    tspan::Tuple{<:Real, <:Real}=(0.0, 24.0),
 )
     cls = cftr_class_factor(class)
     mod = cftr_modulator_factor(;
         class=class,
-        ivacaftor   = get(modulators, :ivacaftor,   false),
-        tezacaftor  = get(modulators, :tezacaftor,  false),
-        elexacaftor = get(modulators, :elexacaftor, false),
+        ivacaftor=get(modulators, :ivacaftor, false),
+        tezacaftor=get(modulators, :tezacaftor, false),
+        elexacaftor=get(modulators, :elexacaftor, false),
     )
     p = [
         :secretion_base => secretion_base,

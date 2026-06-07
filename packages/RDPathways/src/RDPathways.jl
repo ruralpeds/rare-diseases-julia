@@ -18,18 +18,28 @@ contributes only the disease-specific scoring on top.
 """
 module RDPathways
 
-import Random
+using Random: Random
 using Graphs
 using MetaGraphsNext
 using RareDiseaseCore
 
-export
-    PathwayNetwork, NodeData, EdgeData,
-    add_node!, add_edge_undirected!, add_edge_directed!,
-    has_node, has_edge,
-    neighbors_of, neighborhood, shortest_path_length, shortest_path,
-    closest_distance, network_proximity_z,
-    load_reactome, load_wikipathways, load_signor,
+export PathwayNetwork,
+    NodeData,
+    EdgeData,
+    add_node!,
+    add_edge_undirected!,
+    add_edge_directed!,
+    has_node,
+    has_edge,
+    neighbors_of,
+    neighborhood,
+    shortest_path_length,
+    shortest_path,
+    closest_distance,
+    network_proximity_z,
+    load_reactome,
+    load_wikipathways,
+    load_signor,
     pathways_for_gene
 
 """
@@ -63,7 +73,7 @@ Thin wrapper around `MetaGraphsNext.MetaGraph` keyed by string labels
 """
 struct PathwayNetwork
     g::Any  # MetaGraph with closure-typed weight_function; parameterizing
-            # buys nothing at the API boundary so we keep this field abstract.
+    # buys nothing at the API boundary so we keep this field abstract.
 end
 
 function PathwayNetwork()
@@ -82,8 +92,9 @@ Base.length(n::PathwayNetwork) = nv(n.g)
 has_node(n::PathwayNetwork, id) = haskey(n.g, String(id))
 has_edge(n::PathwayNetwork, a, b) = haskey(n.g, String(a), String(b))
 
-function add_node!(n::PathwayNetwork, id::AbstractString;
-                   pathways::Vector{<:AbstractString}=String[])
+function add_node!(
+    n::PathwayNetwork, id::AbstractString; pathways::Vector{<:AbstractString}=String[]
+)
     s = String(id)
     if !haskey(n.g, s)
         n.g[s] = NodeData()
@@ -94,18 +105,18 @@ function add_node!(n::PathwayNetwork, id::AbstractString;
     return n
 end
 
-function add_edge_undirected!(n::PathwayNetwork, a, b;
-                              weight::Float64=1.0, sign::Int=0)
-    add_node!(n, a); add_node!(n, b)
+function add_edge_undirected!(n::PathwayNetwork, a, b; weight::Float64=1.0, sign::Int=0)
+    add_node!(n, a);
+    add_node!(n, b)
     sa, sb = String(a), String(b)
     n.g[sa, sb] = EdgeData(weight, sign)
     n.g[sb, sa] = EdgeData(weight, sign)
     return n
 end
 
-function add_edge_directed!(n::PathwayNetwork, src, dst;
-                            weight::Float64=1.0, sign::Int=0)
-    add_node!(n, src); add_node!(n, dst)
+function add_edge_directed!(n::PathwayNetwork, src, dst; weight::Float64=1.0, sign::Int=0)
+    add_node!(n, src);
+    add_node!(n, dst)
     n.g[String(src), String(dst)] = EdgeData(weight, sign)
     return n
 end
@@ -246,14 +257,15 @@ end
 
 # Loader stubs — SBML/BioPAX/GPML parsers will land via SBMLToolkit + EzXML.
 
-load_reactome(::AbstractString)        = error("load_reactome not yet implemented")
-load_wikipathways(::AbstractString)    = error("load_wikipathways not yet implemented")
-load_signor(::AbstractString)          = error("load_signor not yet implemented")
+load_reactome(::AbstractString) = error("load_reactome not yet implemented")
+load_wikipathways(::AbstractString) = error("load_wikipathways not yet implemented")
+load_signor(::AbstractString) = error("load_signor not yet implemented")
 
 """
     pathways_for_gene(n, id) -> Set{String}
 """
-pathways_for_gene(n::PathwayNetwork, id) =
-    haskey(n.g, String(id)) ? n.g[String(id)].pathways : Set{String}()
+function pathways_for_gene(n::PathwayNetwork, id)
+    return haskey(n.g, String(id)) ? n.g[String(id)].pathways : Set{String}()
+end
 
 end # module

@@ -22,12 +22,20 @@ using SHA
 using TOML
 using RareDiseaseCore
 
-export
-    AbstractSource, SourceManifest, FetchedFile,
-    manifest, fetch!, parse_source,
-    register_source!, registered_sources,
-    cache_path, update_manifest!,
-    HPOSource
+export AbstractSource,
+    SourceManifest,
+    FetchedFile,
+    manifest,
+    fetch!,
+    parse_source,
+    register_source!,
+    registered_sources,
+    cache_path,
+    update_manifest!,
+    HPOSource,
+    IEDBSource,
+    ImmPortSource,
+    IMGTSource
 
 abstract type AbstractSource end
 
@@ -43,7 +51,7 @@ Base.@kwdef struct SourceManifest
     urls::Vector{String}
     license::String
     citation::String
-    expected_sha256::Union{Nothing,Vector{String}} = nothing
+    expected_sha256::Union{Nothing, Vector{String}} = nothing
     notes::String = ""
 end
 
@@ -61,8 +69,7 @@ struct FetchedFile
     bytes::Int
 end
 
-manifest(s::AbstractSource) =
-    error("manifest(::$(typeof(s))) not implemented")
+manifest(s::AbstractSource) = error("manifest(::$(typeof(s))) not implemented")
 
 # ---------------------------------------------------------------------------
 # Default fetch! and parse_source implementations
@@ -101,31 +108,34 @@ function fetch!(
         h = sha256_file(dest)
         if verify && m.expected_sha256 !== nothing
             expected = m.expected_sha256[i]
-            isempty(expected) || expected == h ||
-                throw(ErrorException(
-                    "sha256 mismatch for $url: expected $expected, got $h"
-                ))
+            isempty(expected) ||
+                expected == h ||
+                throw(
+                    ErrorException("sha256 mismatch for $url: expected $expected, got $h")
+                )
         end
         push!(out, FetchedFile(dest, h, url, now(), filesize(dest)))
     end
     return out
 end
 
-parse_source(s::AbstractSource, paths) =
-    error("parse_source(::$(typeof(s)), ...) not implemented")
+function parse_source(s::AbstractSource, paths)
+    return error("parse_source(::$(typeof(s)), ...) not implemented")
+end
 
 # Default parse_source accepting FetchedFile vectors delegates to the
 # string-path overload so callers can pass either form.
-parse_source(s::AbstractSource, files::AbstractVector{FetchedFile}) =
-    parse_source(s, [f.path for f in files])
+function parse_source(s::AbstractSource, files::AbstractVector{FetchedFile})
+    return parse_source(s, [f.path for f in files])
+end
 
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
 
-const _REGISTRY = Dict{String,Type{<:AbstractSource}}()
+const _REGISTRY = Dict{String, Type{<:AbstractSource}}()
 
-function register_source!(::Type{T}, name::AbstractString) where {T<:AbstractSource}
+function register_source!(::Type{T}, name::AbstractString) where {T <: AbstractSource}
     _REGISTRY[String(name)] = T
     return T
 end
@@ -141,8 +151,9 @@ registered_sources() = sort!(collect(keys(_REGISTRY)))
 
 The conventional directory layout for a source's cached files.
 """
-cache_path(cache_dir, name, date::Date=today()) =
-    joinpath(cache_dir, String(name), string(date))
+function cache_path(cache_dir, name, date::Date=today())
+    return joinpath(cache_dir, String(name), string(date))
+end
 
 """
     update_manifest!(toml_path, source_name, files; url_index=nothing)
@@ -156,8 +167,8 @@ function update_manifest!(
     source_name::AbstractString,
     files::AbstractVector{FetchedFile},
 )
-    data = isfile(toml_path) ? TOML.parsefile(toml_path) : Dict{String,Any}()
-    sources = get!(data, "sources", Dict{String,Any}())
+    data = isfile(toml_path) ? TOML.parsefile(toml_path) : Dict{String, Any}()
+    sources = get!(data, "sources", Dict{String, Any}())
     sources[String(source_name)] = Dict(
         "files" => [
             Dict(
@@ -170,7 +181,7 @@ function update_manifest!(
         ],
     )
     open(toml_path, "w") do io
-        TOML.print(io, data; sorted=true)
+        return TOML.print(io, data; sorted=true)
     end
     return data
 end
@@ -184,10 +195,10 @@ function _basename_from_url(url::AbstractString)
     # Strip query/fragment
     for sep in ('?', '#')
         i = findfirst(==(sep), s)
-        i === nothing || (s = s[1:i-1])
+        i === nothing || (s = s[1:(i - 1)])
     end
     bn = basename(s)
-    isempty(bn) ? "download.bin" : bn
+    return isempty(bn) ? "download.bin" : bn
 end
 
 _mtime_dt(path) = unix2datetime(mtime(path))
@@ -215,10 +226,8 @@ HPOSource() = HPOSource("latest")
 function manifest(s::HPOSource)
     v = s.version
     base = "https://github.com/obophenotype/human-phenotype-ontology/releases"
-    obo_url = v == "latest" ?
-        "$base/latest/download/hp.obo" :
-        "$base/download/v$(v)/hp.obo"
-    SourceManifest(
+    obo_url = v == "latest" ? "$base/latest/download/hp.obo" : "$base/download/v$(v)/hp.obo"
+    return SourceManifest(;
         name="HPO",
         urls=[obo_url],
         license="CC-BY-4.0",
@@ -231,5 +240,162 @@ end
 # that lives in RDOntology and is wired up by callers via load_hpo(path).
 
 register_source!(HPOSource, "HPO")
+
+# ---------------------------------------------------------------------------
+# Reference source: IEDB
+# source: IEDB
+# ---------------------------------------------------------------------------
+
+"""
+    IEDBSource()
+
+Downloader for the Immune Epitope Database (IEDB) comprehensive exports.
+"""
+struct IEDBSource <: AbstractSource end
+
+function manifest(s::IEDBSource)
+    return SourceManifest(;
+        name="IEDB",
+        urls=["https://www.iedb.org/downloader.php?file_name=doc/mhc_ligand_full.zip"], # Example full dump URL, can add tcell/bcell
+        license="CC-BY-4.0",
+        citation="Vita R, et al. NAR 2019. PMID:30357391",
+        notes="Immune Epitope Database",
+    )
+end
+
+function parse_source(s::IEDBSource, paths::AbstractVector{<:AbstractString})
+    # Basic rigorous parser for CSV/TSV format of IEDB exports using Base Julia.
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+
+    for path in paths
+        # Usually it's a zip file. If it were unzipped to a CSV/TSV, we would parse it like this:
+        # Since we don't have ZipFile.jl in the environment right now, we assume the user
+        # has unzipped it or we are parsing a plain CSV/TSV file directly.
+        if isfile(path)
+            open(path, "r") do io
+                header = split(readline(io), ',') # Assuming CSV for now
+                for line in eachline(io)
+                    isempty(strip(line)) && continue
+                    parts = split(line, ',')
+
+                    # Create a basic record mapping headers to values
+                    record = Dict{String, Any}()
+                    for (i, h) in enumerate(header)
+                        if i <= length(parts)
+                            record[strip(h, '"')] = strip(parts[i], '"')
+                        end
+                    end
+                    push!(parsed_records, record)
+                end
+            end
+        end
+    end
+
+    return parsed_records
+end
+
+register_source!(IEDBSource, "IEDB")
+
+# ---------------------------------------------------------------------------
+# Reference source: ImmPort
+# source: ImmPort
+# ---------------------------------------------------------------------------
+
+"""
+    ImmPortSource()
+
+Downloader for ImmPort (Immunology Database and Analysis Portal) datasets.
+"""
+struct ImmPortSource <: AbstractSource end
+
+function manifest(s::ImmPortSource)
+    return SourceManifest(;
+        name="ImmPort",
+        urls=[
+            "https://immport.niaid.nih.gov/immport-open/public/download/studyData/SDY269"
+        ], # Example study
+        license="CC-BY-4.0",
+        citation="Bhattacharya S, et al. Sci Data 2018. PMID:29485622",
+        notes="Immunology Database and Analysis Portal",
+    )
+end
+
+function parse_source(s::ImmPortSource, paths::AbstractVector{<:AbstractString})
+    # Basic TSV parser for ImmPort data
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+
+    for path in paths
+        if isfile(path)
+            open(path, "r") do io
+                header = split(readline(io), '\t')
+                for line in eachline(io)
+                    isempty(strip(line)) && continue
+                    parts = split(line, '\t')
+
+                    record = Dict{String, Any}()
+                    for (i, h) in enumerate(header)
+                        if i <= length(parts)
+                            record[strip(h, '"')] = strip(parts[i], '"')
+                        end
+                    end
+                    push!(parsed_records, record)
+                end
+            end
+        end
+    end
+
+    return parsed_records
+end
+
+register_source!(ImmPortSource, "ImmPort")
+
+# ---------------------------------------------------------------------------
+# Reference source: IMGT
+# source: IMGT
+# ---------------------------------------------------------------------------
+
+"""
+    IMGTSource()
+
+Downloader for IMGT (the international ImMunoGeneTics information system).
+"""
+struct IMGTSource <: AbstractSource end
+
+function manifest(s::IMGTSource)
+    return SourceManifest(;
+        name="IMGT",
+        urls=["https://www.imgt.org/download/LIGM-DB/imgt.dat.Z"], # Main database export
+        license="CC-BY-NC-ND-4.0",
+        citation="Lefranc MP, et al. NAR 2015. PMID:25378316",
+        notes="international ImMunoGeneTics information system",
+    )
+end
+
+function parse_source(s::IMGTSource, paths::AbstractVector{<:AbstractString})
+    # Placeholder for IMGT parser, which uses EMBL-like plain text format
+    if isempty(paths)
+        return Dict{String, Any}[]
+    end
+
+    parsed_records = Dict{String, Any}[]
+    for path in paths
+        push!(
+            parsed_records,
+            Dict("source_path" => path, "status" => "embl_format_parsing_pending"),
+        )
+    end
+
+    return parsed_records
+end
+
+register_source!(IMGTSource, "IMGT")
 
 end # module

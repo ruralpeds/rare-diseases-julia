@@ -23,15 +23,19 @@ module RDTreatment
 using RareDiseaseCore
 using RDPathways
 
-export
-    EvidenceTier, APPROVED, IN_TRIAL, PRECLINICAL, REPURPOSING_HYPOTHESIS,
-    TreatmentCandidate, DrugRecord,
-    rank_treatments, NOT_FOR_CLINICAL_USE
+export EvidenceTier,
+    APPROVED,
+    IN_TRIAL,
+    PRECLINICAL,
+    REPURPOSING_HYPOTHESIS,
+    TreatmentCandidate,
+    DrugRecord,
+    rank_treatments,
+    NOT_FOR_CLINICAL_USE
 
 @enum EvidenceTier APPROVED IN_TRIAL PRECLINICAL REPURPOSING_HYPOTHESIS
 
-const NOT_FOR_CLINICAL_USE =
-    "NOT FOR CLINICAL USE. Research output only — do not act on this for any patient."
+const NOT_FOR_CLINICAL_USE = "NOT FOR CLINICAL USE. Research output only — do not act on this for any patient."
 
 """
     DrugRecord
@@ -41,11 +45,11 @@ Minimal drug record used by the ranker. Real ingestion (`RDPharmacology`,
 """
 Base.@kwdef struct DrugRecord
     name::String
-    chembl::Union{Nothing,ChemblId} = nothing
-    rxcui::Union{Nothing,RxCui}     = nothing
-    targets::Vector{String}         = String[]   # node labels in pathway network
-    evidence_tier::EvidenceTier     = REPURPOSING_HYPOTHESIS
-    citations::Vector{String}       = String[]
+    chembl::Union{Nothing, ChemblId} = nothing
+    rxcui::Union{Nothing, RxCui} = nothing
+    targets::Vector{String} = String[]   # node labels in pathway network
+    evidence_tier::EvidenceTier = REPURPOSING_HYPOTHESIS
+    citations::Vector{String} = String[]
 end
 
 """
@@ -93,11 +97,11 @@ function rank_treatments(
         isempty(targets) && continue
 
         r = if rng === nothing
-            network_proximity_z(network, disease_genes, targets;
-                                n_bootstrap=n_bootstrap)
+            network_proximity_z(network, disease_genes, targets; n_bootstrap=n_bootstrap)
         else
-            network_proximity_z(network, disease_genes, targets;
-                                n_bootstrap=n_bootstrap, rng=rng)
+            network_proximity_z(
+                network, disease_genes, targets; n_bootstrap=n_bootstrap, rng=rng
+            )
         end
         isfinite(r.d) || continue   # no reachable target
 
@@ -106,15 +110,20 @@ function rank_treatments(
         score = tier_bonus - r.z
 
         rationale = string(
-            "Drug '", drug.name, "' targets {", join(targets, ", "),
-            "} have mean-min distance ", round(r.d; digits=2),
-            " to disease module {", join(disease_genes, ", "),
-            "} (z=", round(r.z; digits=2), "); tier=$(drug.evidence_tier).",
+            "Drug '",
+            drug.name,
+            "' targets {",
+            join(targets, ", "),
+            "} have mean-min distance ",
+            round(r.d; digits=2),
+            " to disease module {",
+            join(disease_genes, ", "),
+            "} (z=",
+            round(r.z; digits=2),
+            "); tier=$(drug.evidence_tier).",
         )
 
-        push!(cands, TreatmentCandidate(
-            drug, score, r.d, r.z, rationale, drug.citations,
-        ))
+        push!(cands, TreatmentCandidate(drug, score, r.d, r.z, rationale, drug.citations))
     end
     sort!(cands; by=c -> c.score, rev=true)
     length(cands) > topk && resize!(cands, topk)
@@ -124,10 +133,10 @@ end
 # Evidence-tier additive bonus. Calibrated so that an APPROVED drug
 # always outranks a REPURPOSING_HYPOTHESIS at any plausible z-score.
 function _tier_bonus(t::EvidenceTier)
-    t === APPROVED                  && return 20.0
-    t === IN_TRIAL                  && return 10.0
-    t === PRECLINICAL               && return 5.0
-    t === REPURPOSING_HYPOTHESIS    && return 0.0
+    t === APPROVED && return 20.0
+    t === IN_TRIAL && return 10.0
+    t === PRECLINICAL && return 5.0
+    t === REPURPOSING_HYPOTHESIS && return 0.0
     return 0.0
 end
 

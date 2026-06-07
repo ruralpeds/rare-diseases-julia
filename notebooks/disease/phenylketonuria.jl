@@ -35,24 +35,24 @@ md"## 1. Variant class → steady-state [Phe]"
 
 function steady_phe(class; bh4=1.0, tend=96.0)
     prob = pah_pku_problem(; variant=class, bh4=bh4, tspan=(0.0, tend))
-    sol  = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
+    sol = solve(prob, Tsit5(); abstol=1e-9, reltol=1e-8)
     return sol.u[end][1]  # final Phe; species[1] in PAH_PKU
 end
 
 variant_table = [
-    (:wildtype,        steady_phe(:wildtype)),
-    (:mild_hpa,        steady_phe(:mild_hpa)),
-    (:mild_pku,        steady_phe(:mild_pku)),
-    (:moderate_pku,    steady_phe(:moderate_pku)),
-    (:classical_pku,   steady_phe(:classical_pku)),
-    (:null,            steady_phe(:null)),
+    (:wildtype, steady_phe(:wildtype)),
+    (:mild_hpa, steady_phe(:mild_hpa)),
+    (:mild_pku, steady_phe(:mild_pku)),
+    (:moderate_pku, steady_phe(:moderate_pku)),
+    (:classical_pku, steady_phe(:classical_pku)),
+    (:null, steady_phe(:null)),
 ]
 
 # ╔═╡ sapropterin
 md"## 2. Sapropterin (BH4) effect on residual-activity variants"
 
 bh4_off = steady_phe(:classical_pku; bh4=1.0)
-bh4_on  = steady_phe(:classical_pku; bh4=2.0)
+bh4_on = steady_phe(:classical_pku; bh4=2.0)
 md"""
 Classical PKU steady-state Phe:
 - without sapropterin: $(round(bh4_off; digits=3)) mmol/L
@@ -62,8 +62,7 @@ Classical PKU steady-state Phe:
 # ╔═╡ pbpk
 md"## 3. Sapropterin PBPK — single oral dose"
 
-pbpk_sol = solve(sapropterin_pbpk_problem(; dose_mg=10.0, tspan=(0.0, 24.0)),
-                 Tsit5())
+pbpk_sol = solve(sapropterin_pbpk_problem(; dose_mg=10.0, tspan=(0.0, 24.0)), Tsit5())
 
 # ╔═╡ cohort
 md"""
@@ -81,10 +80,7 @@ function patient_step!(agent, model)
 end
 
 cohort = build_cohort_model(;
-    n_agents=50,
-    initial_state=:on_diet,
-    agent_step! = patient_step!,
-    rng=Xoshiro(0),
+    n_agents=50, initial_state=:on_diet, (agent_step!)=patient_step!, rng=Xoshiro(0)
 )
 run_cohort!(cohort, 100)
 

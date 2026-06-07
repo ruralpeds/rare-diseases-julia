@@ -43,3 +43,6 @@ PMC-OAS	literature	https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/	Various-OA
 EuropePMC	literature	https://europepmc.org/	Various-OA	Europe PMC Consortium	Alternative API
 bioRxiv	literature	https://www.biorxiv.org/	CC-BY-Various	CSHL	Preprints
 medRxiv	literature	https://www.medrxiv.org/	CC-BY-Various	CSHL/BMJ/Yale	Clinical preprints
+IEDB	immunology	https://www.iedb.org/	CC-BY-4.0	Vita R, et al. NAR 2019	Immune Epitope Database full export
+ImmPort	immunology	https://www.immport.org/	CC-BY-4.0	Bhattacharya S, et al. Sci Data 2018	Immunology Database and Analysis Portal
+IMGT	immunology	https://www.imgt.org/	CC-BY-NC-ND-4.0	Lefranc MP, et al. NAR 2015	international ImMunoGeneTics information system

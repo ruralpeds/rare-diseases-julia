@@ -51,11 +51,30 @@ struct HgvsProtein
 end
 
 const _AA3_TO_1 = Dict(
-    "Ala"=>"A","Arg"=>"R","Asn"=>"N","Asp"=>"D","Cys"=>"C",
-    "Gln"=>"Q","Glu"=>"E","Gly"=>"G","His"=>"H","Ile"=>"I",
-    "Leu"=>"L","Lys"=>"K","Met"=>"M","Phe"=>"F","Pro"=>"P",
-    "Ser"=>"S","Thr"=>"T","Trp"=>"W","Tyr"=>"Y","Val"=>"V",
-    "Sec"=>"U","Pyl"=>"O","Ter"=>"*","*"=>"*",
+    "Ala"=>"A",
+    "Arg"=>"R",
+    "Asn"=>"N",
+    "Asp"=>"D",
+    "Cys"=>"C",
+    "Gln"=>"Q",
+    "Glu"=>"E",
+    "Gly"=>"G",
+    "His"=>"H",
+    "Ile"=>"I",
+    "Leu"=>"L",
+    "Lys"=>"K",
+    "Met"=>"M",
+    "Phe"=>"F",
+    "Pro"=>"P",
+    "Ser"=>"S",
+    "Thr"=>"T",
+    "Trp"=>"W",
+    "Tyr"=>"Y",
+    "Val"=>"V",
+    "Sec"=>"U",
+    "Pyl"=>"O",
+    "Ter"=>"*",
+    "*"=>"*",
 )
 const _AA1_VALID = Set("ACDEFGHIKLMNPQRSTVWY*U")
 
@@ -70,8 +89,7 @@ function parse_hgvs_c(s::AbstractString)
     length(parts) == 2 || throw(ArgumentError("HGVS: missing ':' in '$s'"))
     ref = String(parts[1])
     body = String(parts[2])
-    startswith(body, "c.") ||
-        throw(ArgumentError("HGVS: '$s' is not a c. expression"))
+    startswith(body, "c.") || throw(ArgumentError("HGVS: '$s' is not a c. expression"))
     expr = body[3:end]
 
     # Substitution: 1241A>G   or   842+1G>A   or   842-2C>T
@@ -79,8 +97,9 @@ function parse_hgvs_c(s::AbstractString)
     if m !== nothing
         pos = parse(Int, m.captures[1])
         off = m.captures[2] === nothing ? 0 : parse(Int, m.captures[2])
-        return HgvsCoding(ref, :substitution, pos, pos, off,
-                          String(m.captures[3]), String(m.captures[4]))
+        return HgvsCoding(
+            ref, :substitution, pos, pos, off, String(m.captures[3]), String(m.captures[4])
+        )
     end
 
     # delins (must come before del/ins because it contains both substrings)
@@ -104,8 +123,7 @@ function parse_hgvs_c(s::AbstractString)
     if m !== nothing
         a = parse(Int, m.captures[1])
         b = parse(Int, m.captures[2])
-        b == a + 1 ||
-            throw(ArgumentError("HGVS ins: flanks must be adjacent in '$s'"))
+        b == a + 1 || throw(ArgumentError("HGVS ins: flanks must be adjacent in '$s'"))
         return HgvsCoding(ref, :insertion, a, b, 0, "", String(m.captures[3]))
     end
 
@@ -131,12 +149,11 @@ function parse_hgvs_p(s::AbstractString)
     length(parts) == 2 || throw(ArgumentError("HGVS: missing ':' in '$s'"))
     ref = String(parts[1])
     body = String(parts[2])
-    startswith(body, "p.") ||
-        throw(ArgumentError("HGVS: '$s' is not a p. expression"))
+    startswith(body, "p.") || throw(ArgumentError("HGVS: '$s' is not a p. expression"))
     expr = strip(body[3:end])
     # Strip optional surrounding parentheses (predicted)
     if startswith(expr, "(") && endswith(expr, ")")
-        expr = expr[2:end-1]
+        expr = expr[2:(end - 1)]
     end
 
     # 3-letter substitution: Arg408Trp / Arg408Ter / Arg408*
@@ -146,8 +163,13 @@ function parse_hgvs_p(s::AbstractString)
         pos = parse(Int, m.captures[2])
         raw = String(m.captures[3])
         alt_aa = raw == "*" ? "*" : _aa1(raw)
-        kind = alt_aa == "*" ? :nonsense :
-               ref_aa == alt_aa ? :synonymous : :missense
+        kind = if alt_aa == "*"
+            :nonsense
+        elseif ref_aa == alt_aa
+            :synonymous
+        else
+            :missense
+        end
         return HgvsProtein(ref, kind, pos, ref_aa, alt_aa)
     end
 
@@ -157,8 +179,13 @@ function parse_hgvs_p(s::AbstractString)
         ref_aa = String(m.captures[1])
         pos = parse(Int, m.captures[2])
         alt_aa = String(m.captures[3])
-        kind = alt_aa == "*" ? :nonsense :
-               ref_aa == alt_aa ? :synonymous : :missense
+        kind = if alt_aa == "*"
+            :nonsense
+        elseif ref_aa == alt_aa
+            :synonymous
+        else
+            :missense
+        end
         return HgvsProtein(ref, kind, pos, ref_aa, alt_aa)
     end
 

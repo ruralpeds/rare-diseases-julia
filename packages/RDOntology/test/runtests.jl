@@ -4,7 +4,6 @@ using RDOntology
 const FIXTURE = joinpath(@__DIR__, "fixtures", "mini_hpo.obo")
 
 @testset "RDOntology" begin
-
     @testset "OBO parser" begin
         g = load_hpo(FIXTURE)
         @test length(g) == 9
@@ -60,47 +59,35 @@ const FIXTURE = joinpath(@__DIR__, "fixtures", "mini_hpo.obo")
         @test term_ic(g, "HP:0000505") > term_ic(g, "HP:0000478")
 
         # Seizure ↔ seizure → MICA = seizure itself
-        mica_id, mica_ic = most_informative_common_ancestor(
-            g, "HP:0001250", "HP:0001250"
-        )
+        mica_id, mica_ic = most_informative_common_ancestor(g, "HP:0001250", "HP:0001250")
         @test mica_id == "HP:0001250"
         @test mica_ic == term_ic(g, "HP:0001250")
 
         # Seizure ↔ intellectual disability share their nervous-system parent
-        mica_id, _ = most_informative_common_ancestor(
-            g, "HP:0001250", "HP:0001249"
-        )
+        mica_id, _ = most_informative_common_ancestor(g, "HP:0001250", "HP:0001249")
         @test mica_id == "HP:0012638"
 
         # Seizure ↔ visual impairment share only "Phenotypic abnormality"
-        mica_id, _ = most_informative_common_ancestor(
-            g, "HP:0001250", "HP:0000505"
-        )
+        mica_id, _ = most_informative_common_ancestor(g, "HP:0001250", "HP:0000505")
         @test mica_id == "HP:0000118"
 
         # Best-pairs Resnik: query overlapping with itself ≥ query vs unrelated
-        sim_self  = phenotype_similarity(g,
-            ["HP:0001250"], ["HP:0001250"]; method=:resnik)
-        sim_cross = phenotype_similarity(g,
-            ["HP:0001250"], ["HP:0000505"]; method=:resnik)
+        sim_self = phenotype_similarity(g, ["HP:0001250"], ["HP:0001250"]; method=:resnik)
+        sim_cross = phenotype_similarity(g, ["HP:0001250"], ["HP:0000505"]; method=:resnik)
         @test sim_self > sim_cross
 
         # Lin similarity is bounded in [0, 1]
-        sim_lin = phenotype_similarity(g,
-            ["HP:0001250"], ["HP:0001249"]; method=:lin)
+        sim_lin = phenotype_similarity(g, ["HP:0001250"], ["HP:0001249"]; method=:lin)
         @test 0.0 ≤ sim_lin ≤ 1.0
 
         # Jiang-Conrath similarity is bounded in (0, 1]
-        sim_jc = phenotype_similarity(g,
-            ["HP:0001250"], ["HP:0001250"]; method=:jc)
+        sim_jc = phenotype_similarity(g, ["HP:0001250"], ["HP:0001250"]; method=:jc)
         @test 0.0 < sim_jc ≤ 1.0
     end
 
     @testset "Errors before IC is computed" begin
         g = load_hpo(FIXTURE)
         @test_throws ErrorException term_ic(g, "HP:0001250")
-        @test_throws ErrorException phenotype_similarity(
-            g, ["HP:0001250"], ["HP:0001250"]
-        )
+        @test_throws ErrorException phenotype_similarity(g, ["HP:0001250"], ["HP:0001250"])
     end
 end

@@ -1,7 +1,6 @@
 using Test
 using RDApp
-using RDApp: handle_diagnose, handle_simulate, handle_treatments,
-             build_default_state
+using RDApp: handle_diagnose, handle_simulate, handle_treatments, build_default_state
 
 @testset "RDApp" begin
     @testset "Route table" begin
@@ -15,8 +14,7 @@ using RDApp: handle_diagnose, handle_simulate, handle_treatments,
 
     @testset "Banner contents" begin
         @test occursin("research", lowercase(RDApp.NOT_FOR_CLINICAL_USE_BANNER))
-        @test occursin("not for clinical use",
-                       lowercase(RDApp.NOT_FOR_CLINICAL_USE_BANNER))
+        @test occursin("not for clinical use", lowercase(RDApp.NOT_FOR_CLINICAL_USE_BANNER))
     end
 
     @testset "Default app state loads bundled fixtures" begin
@@ -37,28 +35,33 @@ using RDApp: handle_diagnose, handle_simulate, handle_treatments,
     end
 
     @testset "handle_simulate dispatches to the right model" begin
-        out = handle_simulate(Dict(
-            "model" => "PAH_PKU",
-            "params" => Dict("variant" => "classical_pku", "bh4" => 2.0),
-        ))
+        out = handle_simulate(
+            Dict(
+                "model" => "PAH_PKU",
+                "params" => Dict("variant" => "classical_pku", "bh4" => 2.0),
+            ),
+        )
         @test out["model"] == "PAH_PKU"
         @test haskey(out["final"], "Phe")
         @test out["final"]["Phe"] > 0
 
-        out2 = handle_simulate(Dict(
-            "model" => "CFTR_CF",
-            "params" => Dict("class" => "II",
-                             "tezacaftor" => true,
-                             "elexacaftor" => true,
-                             "ivacaftor" => true),
-        ))
+        out2 = handle_simulate(
+            Dict(
+                "model" => "CFTR_CF",
+                "params" => Dict(
+                    "class" => "II",
+                    "tezacaftor" => true,
+                    "elexacaftor" => true,
+                    "ivacaftor" => true,
+                ),
+            ),
+        )
         @test out2["model"] == "CFTR_CF"
         @test haskey(out2["final"], "ASL")
 
-        out3 = handle_simulate(Dict(
-            "model" => "HBS_SCD",
-            "params" => Dict("hbf_fraction" => 0.15),
-        ))
+        out3 = handle_simulate(
+            Dict("model" => "HBS_SCD", "params" => Dict("hbf_fraction" => 0.15))
+        )
         @test haskey(out3["final"], "Poly")
 
         bad = handle_simulate(Dict("model" => "nonexistent"))

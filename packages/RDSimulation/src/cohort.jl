@@ -9,7 +9,7 @@ holds genotype/age/etc.
 """
 @agent struct Patient(NoSpaceAgent)
     state::Symbol
-    covariates::Dict{Symbol,Any}
+    covariates::Dict{Symbol, Any}
 end
 
 """
@@ -30,9 +30,9 @@ function build_cohort_model(;
     agent_step!::Function,
     rng::AbstractRNG=Random.default_rng(),
 )
-    model = StandardABM(Patient; agent_step!=agent_step!, rng=rng)
+    model = StandardABM(Patient; agent_step! = agent_step!, rng=rng)
     for _ in 1:n_agents
-        add_agent!(model, initial_state, Dict{Symbol,Any}())
+        add_agent!(model, initial_state, Dict{Symbol, Any}())
     end
     return model
 end
